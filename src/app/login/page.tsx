@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/components/ToastProvider';
 
 function LoginContent() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
+  const { showToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +38,18 @@ function LoginContent() {
 
       if (res.ok) {
         // Success
+        showToast('Welcome back!', `Signed in as ${data.user?.name || email}`, 'success');
         router.refresh();
         router.push(redirect);
       } else {
-        setError(data.error || 'Authentication failed.');
+        const msg = data.error || 'Authentication failed.';
+        setError(msg);
+        showToast('Login Failed', msg, 'error');
       }
     } catch (err) {
-      setError('Connection failed. Please try again.');
+      const msg = 'Connection failed. Please try again.';
+      setError(msg);
+      showToast('Connection Error', msg, 'error');
     } finally {
       setLoading(false);
     }

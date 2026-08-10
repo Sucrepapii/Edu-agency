@@ -13,10 +13,12 @@ export class ApiError extends Error {
 // Get the logged in user from cookies and fetch fresh database record
 export async function getAuthUser(request: Request) {
   const cookieHeader = request.headers.get('cookie') || '';
-  const token = cookieHeader
+  const tokenCookie = cookieHeader
     .split(';')
-    .find((c) => c.trim().startsWith('auth-token='))
-    ?.split('=')[1];
+    .find((c) => c.trim().startsWith('auth-token='));
+  const token = tokenCookie
+    ? tokenCookie.trim().substring('auth-token='.length)
+    : undefined;
 
   if (!token) {
     throw new ApiError('Unauthorized. Please log in.', 401);
