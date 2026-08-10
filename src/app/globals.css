@@ -40,10 +40,24 @@
   --color-red-400: #ff8787;
   --color-red-500: #d92d20;
   --color-red-600: #b42318;
+  --color-red-650: #a2221b;
   --color-red-700: #912018;
   --color-red-800: #7a271a;
   --color-red-900: #551e17;
   --color-red-950: #2c0c09;
+
+  /* Map blue to Army Green to instantly update the branding and dashboard */
+  --color-blue-50: #f4f6f0;
+  --color-blue-100: #e6ebdb;
+  --color-blue-200: #ccd8b9;
+  --color-blue-300: #adbfa3;
+  --color-blue-400: #89a17b;
+  --color-blue-500: #607d53;
+  --color-blue-600: #4b6240;
+  --color-blue-700: #3b4e33;
+  --color-blue-800: #2f3e29;
+  --color-blue-900: #263222;
+  --color-blue-950: #131911;
 }
 
 @keyframes slideInRight {
