@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUser, handleApiError, ApiError } from '@/lib/api-middleware';
 import { sendApplicationSubmittedEmail } from '@/lib/resend';
 
+export const dynamic = 'force-dynamic';
+
 // GET student's own application
 export async function GET(request: Request) {
   try {

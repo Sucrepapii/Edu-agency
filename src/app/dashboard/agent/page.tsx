@@ -25,13 +25,11 @@ export default function AgentDashboard() {
   const loadStats = async () => {
     try {
       // Fetch students assigned to this agent
-      const res = await fetch('/api/admin/agents');
+      const res = await fetch('/api/agent/students');
       if (res.ok) {
         const data = await res.json();
-        // Find current logged in agent profile inside the list
-        const myProfile = data.agents.find((a: any) => a.id === user?.agentProfile?.id);
-        if (myProfile) {
-          const myStudentsList = myProfile.students || [];
+        const myStudentsList = data.students || [];
+        
           
           let docsAwaitingReview = 0;
           let newDocuments = 0;
@@ -69,7 +67,6 @@ export default function AgentDashboard() {
             activeApps,
             completedApps,
           });
-        }
       }
     } catch (err) {
       console.error('Failed to load agent stats:', err);

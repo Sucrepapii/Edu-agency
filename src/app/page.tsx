@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Shield, Users, FileText, BarChart3, GraduationCap } from 'lucide-react';
+import { ArrowRight, CheckCircle, Shield, Users, FileText, BarChart3, GraduationCap, Search } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -25,25 +25,47 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-red-950 text-white py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-red-900/30 via-transparent to-transparent opacity-70 pointer-events-none"></div>
-        <div className="max-w-4xl mx-auto relative z-10 space-y-6">
-          <span className="inline-flex items-center rounded-full bg-red-400/10 px-3 py-1 text-sm font-medium text-red-300 ring-1 ring-inset ring-red-400/20">
-            Next Generation Agency Portal
+      <section className="relative text-white py-24 px-4 sm:px-6 lg:px-8 text-center min-h-[600px] flex items-center justify-center overflow-hidden">
+        {/* Background Image & Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0" 
+          style={{ backgroundImage: "url('/hero-bg.png')" }}
+        />
+        <div className="absolute inset-0 bg-slate-950/80 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/90 z-0"></div>
+        
+        <div className="max-w-4xl mx-auto relative z-10 space-y-8 w-full">
+          <span className="inline-flex items-center rounded-full bg-cyan-900/40 px-3 py-1 text-sm font-medium text-cyan-400 border border-cyan-800/50 backdrop-blur-sm">
+            AI-Enhanced Admission Guidance
           </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-            Your Education Journey, <span className="text-red-500">Managed in One Place</span>
+          
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight text-white drop-shadow-lg">
+            Build Your Future <span className="text-red-500">Across Borders</span>
           </h1>
-          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
-            Submit your application, upload documents, communicate with your education agent, and track your progress from start to finish.
+          
+          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+            We help ambitious individuals navigate global immigration and university admissions smarter, faster, and more affordably with automated tracking and expert counselor review.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="/register" className="w-full sm:w-auto bg-red-600 hover:bg-red-500 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-red-500/20 transition-all flex items-center justify-center gap-2 group">
-              Start Your Application
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          
+          {/* Central Interactive Widget */}
+          <div className="mt-8 max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 flex items-center bg-white/5 rounded-xl px-4 py-3 border border-white/10">
+              <Search className="h-5 w-5 text-slate-400 mr-3" />
+              <input 
+                type="text" 
+                placeholder="Where do you want to study? (e.g. Canada, UK)" 
+                className="bg-transparent border-none outline-none text-white placeholder-slate-400 w-full font-light"
+              />
+            </div>
+            <Link href="/register" className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-red-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+              Check Eligibility
+              <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/login" className="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white font-medium px-6 py-3 rounded-lg transition-all">
-              Login to Portal
+          </div>
+          
+          <div className="pt-4 flex justify-center">
+             <Link href="/login" className="text-slate-300 hover:text-white font-medium text-sm underline underline-offset-4 transition-colors">
+              Already have an account? Log In
             </Link>
           </div>
         </div>

@@ -32,15 +32,7 @@ export default function AgentStudentsPage() {
 
   const [loadingList, setLoadingList] = useState(true);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
-      </div>
-    );
-  }
 
-  if (!user) return null;
 
   useEffect(() => {
     if (user?.agentProfile?.id) {
@@ -51,13 +43,10 @@ export default function AgentStudentsPage() {
   const loadStudents = async () => {
     try {
       setLoadingList(true);
-      const res = await fetch('/api/admin/agents');
+      const res = await fetch('/api/agent/students');
       if (res.ok) {
         const data = await res.json();
-        const myProfile = data.agents.find((a: any) => a.id === user?.agentProfile?.id);
-        if (myProfile) {
-          setStudents(myProfile.students || []);
-        }
+        setStudents(data.students || []);
       }
     } catch (err) {
       console.error('Failed to load students list:', err);

@@ -37,7 +37,8 @@
       "phone": "+1 (555) 300-4000",
       "assignmentMode": "ADMIN_ONLY",
       "status": "SUSPENDED",
-      "createdAt": "2026-08-10T13:18:55.807Z"
+      "createdAt": "2026-08-10T13:18:55.807Z",
+      "updatedAt": "2026-08-10T23:44:33.632Z"
     }
   ],
   "users": [
@@ -385,9 +386,10 @@
       "id": "student-6",
       "userId": "user-stud6",
       "agencyId": "agency-1",
-      "assignedAgentId": null,
-      "assignmentStatus": "UNASSIGNED",
-      "createdAt": "2026-08-10T13:18:55.807Z"
+      "assignedAgentId": "agent-1",
+      "assignmentStatus": "ASSIGNED",
+      "createdAt": "2026-08-10T13:18:55.807Z",
+      "updatedAt": "2026-08-10T22:29:15.889Z"
     },
     {
       "id": "student-7",
@@ -409,9 +411,10 @@
       "id": "student-9",
       "userId": "user-stud9",
       "agencyId": "agency-1",
-      "assignedAgentId": null,
-      "assignmentStatus": "UNASSIGNED",
-      "createdAt": "2026-08-10T13:18:55.807Z"
+      "assignedAgentId": "agent-1",
+      "assignmentStatus": "ASSIGNED",
+      "createdAt": "2026-08-10T13:18:55.807Z",
+      "updatedAt": "2026-08-10T22:37:01.046Z"
     },
     {
       "id": "student-10",
@@ -460,8 +463,8 @@
       "studentId": "student-1",
       "agencyId": "agency-1",
       "assignedAgentId": "agent-1",
-      "status": "SCHOOL_SELECTION",
-      "progressPercentage": 50,
+      "status": "COMPLETED",
+      "progressPercentage": 100,
       "fullName": "John Doe",
       "email": "john.doe@gmail.com",
       "phone": "+1 (555) 999-0000",
@@ -479,7 +482,7 @@
       "graduationYear": 2024,
       "gpa": "3.8 / 4.0",
       "createdAt": "2026-08-10T13:18:55.807Z",
-      "updatedAt": "2026-08-10T13:18:55.807Z"
+      "updatedAt": "2026-08-10T22:43:27.775Z"
     },
     {
       "id": "app-student-2",
@@ -589,9 +592,9 @@
       "id": "app-student-6",
       "studentId": "student-6",
       "agencyId": "agency-1",
-      "assignedAgentId": null,
-      "status": "SUBMITTED",
-      "progressPercentage": 8,
+      "assignedAgentId": "agent-1",
+      "status": "AGENT_ASSIGNED",
+      "progressPercentage": 16,
       "fullName": "Samuel White",
       "email": "samuel.white@gmail.com",
       "phone": "+1 (555) 999-0000",
@@ -609,7 +612,7 @@
       "graduationYear": 2024,
       "gpa": "3.8 / 4.0",
       "createdAt": "2026-08-10T13:18:55.807Z",
-      "updatedAt": "2026-08-10T13:18:55.807Z"
+      "updatedAt": "2026-08-10T22:29:15.899Z"
     },
     {
       "id": "app-student-7",
@@ -667,9 +670,9 @@
       "id": "app-student-9",
       "studentId": "student-9",
       "agencyId": "agency-1",
-      "assignedAgentId": null,
-      "status": "SUBMITTED",
-      "progressPercentage": 8,
+      "assignedAgentId": "agent-1",
+      "status": "AGENT_ASSIGNED",
+      "progressPercentage": 16,
       "fullName": "Fatima Al-Mansoor",
       "email": "fatima.a@gmail.com",
       "phone": "+1 (555) 999-0000",
@@ -687,7 +690,7 @@
       "graduationYear": 2024,
       "gpa": "3.8 / 4.0",
       "createdAt": "2026-08-10T13:18:55.807Z",
-      "updatedAt": "2026-08-10T13:18:55.807Z"
+      "updatedAt": "2026-08-10T22:37:01.081Z"
     },
     {
       "id": "app-student-10",
@@ -1504,9 +1507,74 @@
       "agencyId": "agency-1",
       "message": "Thank you! I have uploaded my passport and transcript. Let me know if you need anything else.",
       "createdAt": "2026-08-10T12:18:55.807Z"
+    },
+    {
+      "id": "apc0hh943tbc8ehu0e4xds",
+      "createdAt": "2026-08-10T22:17:47.880Z",
+      "updatedAt": "2026-08-10T22:17:47.880Z",
+      "senderId": "user-stud3",
+      "receiverId": "user-agent1",
+      "studentId": "student-3",
+      "agencyId": "agency-1",
+      "message": "fnfhhfhfhfhf"
     }
   ],
-  "notifications": [],
+  "notifications": [
+    {
+      "id": "1cpymri8t4ro8tim5q81pi",
+      "createdAt": "2026-08-10T22:17:47.885Z",
+      "updatedAt": "2026-08-10T22:17:47.886Z",
+      "userId": "user-agent1",
+      "type": "NEW_MESSAGE",
+      "title": "New Message Received",
+      "message": "You have a new message from Peter Adams: \"fnfhhfhfhfhf\""
+    },
+    {
+      "id": "zvn3fkn5t4t4y0r64owu",
+      "createdAt": "2026-08-10T22:29:15.915Z",
+      "updatedAt": "2026-08-10T22:29:15.915Z",
+      "userId": "user-stud6",
+      "type": "AGENT_ASSIGNED",
+      "title": "Education Agent Assigned",
+      "message": "Sarah Johnson has claimed your profile and will be managing your applications."
+    },
+    {
+      "id": "vvrga52ziplsfwdfz13rk",
+      "createdAt": "2026-08-10T22:29:15.932Z",
+      "updatedAt": "2026-08-10T22:29:15.932Z",
+      "userId": "user-admin1",
+      "type": "STUDENT_CLAIMED",
+      "title": "Student Profile Claimed",
+      "message": "Samuel White was claimed by agent Sarah Johnson."
+    },
+    {
+      "id": "84ff962jvpmhon8mry7wnh",
+      "createdAt": "2026-08-10T22:37:01.113Z",
+      "updatedAt": "2026-08-10T22:37:01.113Z",
+      "userId": "user-stud9",
+      "type": "AGENT_ASSIGNED",
+      "title": "Education Agent Assigned",
+      "message": "Sarah Johnson has claimed your profile and will be managing your applications."
+    },
+    {
+      "id": "qyvdchpnuhs90x0uhv3or",
+      "createdAt": "2026-08-10T22:37:01.157Z",
+      "updatedAt": "2026-08-10T22:37:01.157Z",
+      "userId": "user-admin1",
+      "type": "STUDENT_CLAIMED",
+      "title": "Student Profile Claimed",
+      "message": "Fatima Al-Mansoor was claimed by agent Sarah Johnson."
+    },
+    {
+      "id": "90jnm0faayc3f76k9ygnl6",
+      "createdAt": "2026-08-10T22:43:27.819Z",
+      "updatedAt": "2026-08-10T22:43:27.819Z",
+      "userId": "user-stud1",
+      "type": "STAGE_UPDATED",
+      "title": "Application Progress Update",
+      "message": "Your application stage has been updated to: \"completed\" (100% complete)."
+    }
+  ],
   "activityLogs": [
     {
       "id": "log-student-1-1",
@@ -1677,6 +1745,69 @@
       "action": "Agent Assigned",
       "description": "Yuki Sato was assigned to agent by Admin.",
       "createdAt": "2026-08-10T13:18:55.807Z"
+    },
+    {
+      "id": "n0q63c33z9bci0r61a2p5q",
+      "createdAt": "2026-08-10T22:29:15.909Z",
+      "updatedAt": "2026-08-10T22:29:15.909Z",
+      "agencyId": "agency-1",
+      "studentId": "student-6",
+      "userId": "user-agent1",
+      "action": "Student Claimed",
+      "description": "Samuel White was claimed by Agent Sarah Johnson."
+    },
+    {
+      "id": "ddmfwb5aehqdsvszmc2n9u",
+      "createdAt": "2026-08-10T22:37:01.107Z",
+      "updatedAt": "2026-08-10T22:37:01.107Z",
+      "agencyId": "agency-1",
+      "studentId": "student-9",
+      "userId": "user-agent1",
+      "action": "Student Claimed",
+      "description": "Fatima Al-Mansoor was claimed by Agent Sarah Johnson."
+    },
+    {
+      "id": "f8p3qlx0zf8mx5bn45x1t",
+      "createdAt": "2026-08-10T22:43:27.799Z",
+      "updatedAt": "2026-08-10T22:43:27.799Z",
+      "agencyId": "agency-1",
+      "studentId": "student-1",
+      "applicationId": "app-student-1",
+      "userId": "user-agent1",
+      "action": "Stage Updated",
+      "description": "Updated application stage to: COMPLETED (100%)."
+    },
+    {
+      "id": "ep1c817a69wyzc1l9iuhqr",
+      "createdAt": "2026-08-10T23:44:27.903Z",
+      "updatedAt": "2026-08-10T23:44:27.903Z",
+      "userId": "user-superadmin",
+      "action": "Agency Updated",
+      "description": "Platform Super Admin updated agency: Apex Scholars Advisory. Status: ACTIVE."
+    },
+    {
+      "id": "aokib39maynigyimkmddrm",
+      "createdAt": "2026-08-10T23:44:30.601Z",
+      "updatedAt": "2026-08-10T23:44:30.601Z",
+      "userId": "user-superadmin",
+      "action": "Agency Updated",
+      "description": "Platform Super Admin updated agency: Apex Scholars Advisory. Status: SUSPENDED."
+    },
+    {
+      "id": "aio9tjpi5um6xntbxva3nj",
+      "createdAt": "2026-08-10T23:44:32.587Z",
+      "updatedAt": "2026-08-10T23:44:32.587Z",
+      "userId": "user-superadmin",
+      "action": "Agency Updated",
+      "description": "Platform Super Admin updated agency: Apex Scholars Advisory. Status: ACTIVE."
+    },
+    {
+      "id": "shigrckef0lsu6l6mzwam",
+      "createdAt": "2026-08-10T23:44:33.634Z",
+      "updatedAt": "2026-08-10T23:44:33.635Z",
+      "userId": "user-superadmin",
+      "action": "Agency Updated",
+      "description": "Platform Super Admin updated agency: Apex Scholars Advisory. Status: SUSPENDED."
     }
   ],
   "agentChangeRequests": []

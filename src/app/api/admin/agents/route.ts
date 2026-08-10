@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUser, handleApiError, ApiError } from '@/lib/api-middleware';
 import { hashPassword } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const user = await getAuthUser(request);

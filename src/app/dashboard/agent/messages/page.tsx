@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
 import { Send, Search, MessageSquare, ChevronRight, GraduationCap, ArrowLeft } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { getPusherClient } from '@/lib/pusher';
 
 interface StudentListRow {
   id: string;
@@ -43,15 +44,7 @@ function AgentMessagesContent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
-      </div>
-    );
-  }
 
-  if (!user) return null;
 
   // Load student list on mount
   useEffect(() => {
@@ -70,13 +63,28 @@ function AgentMessagesContent() {
     }
   }, [searchParams, students]);
 
+
   // Load chat messages when selected student changes
   useEffect(() => {
     if (selectedStudentId) {
       loadMessages();
-      // Setup polling
-      const interval = setInterval(loadMessages, 4000);
-      return () => clearInterval(interval);
+      
+      const pusher = getPusherClient();
+      if (!pusher) return;
+      
+      const channelName = `chat-student-${selectedStudentId}`;
+      const channel = pusher.subscribe(channelName);
+      
+      channel.bind('new-message', (newMessage: ChatMessage) => {
+        setMessages((prev) => {
+          if (prev.find(m => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
+      });
+      
+      return () => {
+        pusher.unsubscribe(channelName);
+      };
     } else {
       setMessages([]);
     }
@@ -89,13 +97,10 @@ function AgentMessagesContent() {
 
   const loadStudents = async () => {
     try {
-      const res = await fetch('/api/admin/agents');
+      const res = await fetch('/api/agent/students');
       if (res.ok) {
         const data = await res.json();
-        const myProfile = data.agents.find((a: any) => a.id === user?.agentProfile?.id);
-        if (myProfile) {
-          setStudents(myProfile.students || []);
-        }
+        setStudents(data.students || []);
       }
     } catch (err) {
       console.error('Failed to load assigned students:', err);

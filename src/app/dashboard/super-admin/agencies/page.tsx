@@ -35,6 +35,8 @@ export default function SuperAdminAgenciesPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [agencyToToggle, setAgencyToToggle] = useState<{ id: string, name: string, status: string } | null>(null);
+
   useEffect(() => {
     if (user) {
       loadAgencies();
@@ -87,17 +89,20 @@ export default function SuperAdminAgenciesPage() {
     }
   };
 
-  const toggleAgencyStatus = async (agencyId: string, currentStatus: string) => {
+  const toggleAgencyStatus = async () => {
+    if (!agencyToToggle) return;
+    
     try {
-      const targetStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+      const targetStatus = agencyToToggle.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
       const res = await fetch('/api/super-admin/agencies', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: agencyId, status: targetStatus }),
+        body: JSON.stringify({ id: agencyToToggle.id, status: targetStatus }),
       });
 
       if (res.ok) {
         setSuccessMsg(`Agency status toggled to ${targetStatus.toLowerCase()} successfully.`);
+        setAgencyToToggle(null);
         loadAgencies();
       }
     } catch (err) {
@@ -202,7 +207,7 @@ export default function SuperAdminAgenciesPage() {
                       </td>
                       <td className="px-6 py-4 text-right whitespace-nowrap">
                         <button
-                          onClick={() => toggleAgencyStatus(ag.id, ag.status)}
+                          onClick={() => setAgencyToToggle({ id: ag.id, name: ag.name, status: ag.status })}
                           className={`font-semibold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
                             ag.status === 'ACTIVE'
                               ? 'bg-rose-50 hover:bg-rose-100 text-rose-700'
@@ -294,6 +299,41 @@ export default function SuperAdminAgenciesPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Toggle Confirmation Modal */}
+        {agencyToToggle && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-100">
+              <h3 className="font-bold text-slate-900 text-lg">
+                {agencyToToggle.status === 'ACTIVE' ? 'Suspend Agency' : 'Activate Agency'}
+              </h3>
+              <p className="text-slate-600 text-sm font-light">
+                Are you sure you want to {agencyToToggle.status === 'ACTIVE' ? 'suspend' : 'activate'} <strong>{agencyToToggle.name}</strong>?
+              </p>
+              
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setAgencyToToggle(null)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleAgencyStatus}
+                  className={`flex-1 font-semibold py-2.5 rounded-xl shadow-md transition-colors cursor-pointer ${
+                    agencyToToggle.status === 'ACTIVE' 
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white' 
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         )}

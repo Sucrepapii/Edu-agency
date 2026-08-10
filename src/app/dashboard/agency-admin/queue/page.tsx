@@ -45,15 +45,7 @@ export default function AgencyAdminQueuePage() {
 
   const [search, setSearch] = useState('');
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
-      </div>
-    );
-  }
 
-  if (!user) return null;
 
   useEffect(() => {
     if (user?.agencyId) {
@@ -126,6 +118,16 @@ export default function AgencyAdminQueuePage() {
     s.user.name.toLowerCase().includes(search.toLowerCase()) ||
     (s.application?.prefCountry || '').toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-slate-50 items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">

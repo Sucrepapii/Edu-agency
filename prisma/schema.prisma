@@ -76,6 +76,7 @@ model Agency {
   messages            Message[]
   activityLogs        ActivityLog[]
   agentChangeRequests AgentChangeRequest[]
+  invoices            Invoice[]
 }
 
 model User {
@@ -132,6 +133,7 @@ model Student {
   messages      Message[]
   activityLogs  ActivityLog[]
   changeRequests AgentChangeRequest[]
+  invoices      Invoice[]
 }
 
 model Application {
@@ -251,4 +253,53 @@ model AgentChangeRequest {
   student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   agency       Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   currentAgent Agent?  @relation("CurrentAgent", fields: [currentAgentId], references: [id], onDelete: SetNull)
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  studentId   String
+  agencyId    String
+  amount      Float
+  status      InvoiceStatus @default(PENDING)
+  dueDate     DateTime?
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency      Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  payments    Payment[]
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  invoiceId        String
+  amount           Float
+  paystackRef      String?       @unique
+  status           PaymentStatus @default(PENDING)
+  createdAt        DateTime      @default(now())
+
+  invoice          Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }

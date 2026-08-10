@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser, handleApiError, ApiError, checkAgentAssignment } from '@/lib/api-middleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const user = await getAuthUser(request);
@@ -160,6 +162,15 @@ export async function POST(request: Request) {
         }"`,
       },
     });
+
+    // Trigger real-time event via Pusher
+    try {
+      const { pusherServer } = await import('@/lib/pusher');
+      await pusherServer.trigger(`chat-student-${studentId}`, 'new-message', newMessage);
+    } catch (pusherErr) {
+      console.error('Failed to trigger Pusher event:', pusherErr);
+      // Don't fail the request if Pusher fails
+    }
 
     return NextResponse.json({ success: true, message: newMessage });
   } catch (error: any) {

@@ -130,3 +130,26 @@ export async function sendAgentChangeRequestedEmail(
     `,
   });
 }
+
+// Password Reset Email
+export async function sendPasswordResetEmail(
+  email: string,
+  name: string,
+  token: string
+) {
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+  
+  await sendEmail({
+    to: email,
+    subject: 'Password Reset Request',
+    html: `
+      <h2>Hello ${name},</h2>
+      <p>You have requested to reset your password.</p>
+      <p>Click the link below to set a new password:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>If you did not request this, please ignore this email.</p>
+      <br/>
+      <p>Best regards,<br/>Education Agency Team</p>
+    `,
+  });
+}

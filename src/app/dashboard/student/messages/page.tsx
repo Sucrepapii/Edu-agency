@@ -5,6 +5,7 @@ import { useUser } from '@/hooks/useUser';
 import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
 import { Send, FileCheck, ArrowUpRight, MessageSquare, ArrowLeft } from 'lucide-react';
+import { getPusherClient } from '@/lib/pusher';
 
 interface ChatMessage {
   id: string;
@@ -32,9 +33,23 @@ export default function StudentMessagesPage() {
   useEffect(() => {
     if (user?.studentProfile?.id) {
       loadMessages();
-      // Setup polling every 4 seconds to simulate real-time updates (Section 20 & 21)
-      const interval = setInterval(loadMessages, 4000);
-      return () => clearInterval(interval);
+      
+      const pusher = getPusherClient();
+      if (!pusher) return;
+      
+      const channelName = `chat-student-${user.studentProfile.id}`;
+      const channel = pusher.subscribe(channelName);
+      
+      channel.bind('new-message', (newMessage: ChatMessage) => {
+        setMessages((prev) => {
+          if (prev.find(m => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
+      });
+      
+      return () => {
+        pusher.unsubscribe(channelName);
+      };
     }
   }, [user]);
 

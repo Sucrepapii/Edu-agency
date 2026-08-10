@@ -53,16 +53,9 @@ export default function AgentStudentDetailsPage() {
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [docToReview, setDocToReview] = useState<{ id: string, status: string, name: string } | null>(null);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
-      </div>
-    );
-  }
 
-  if (!user) return null;
 
   useEffect(() => {
     if (id) {
@@ -74,21 +67,15 @@ export default function AgentStudentDetailsPage() {
     try {
       setLoadingStudent(true);
       setErrorMsg(null);
-      // Fetch details from agents endpoint (or write a specific student details API)
-      // Since our agents mock/real endpoint lists all agents and their students, we can scan that
-      const res = await fetch(`/api/admin/agents`);
+      const res = await fetch('/api/agent/students');
       if (res.ok) {
         const data = await res.json();
-        // Find our agent profile and search the students array
-        const myProfile = data.agents.find((a: any) => a.id === user?.agentProfile?.id);
-        if (myProfile) {
-          const st = myProfile.students.find((s: any) => s.id === id);
-          if (st) {
-            setStudent(st);
-            setSelectedStage(st.application?.status || '');
-          } else {
-            setErrorMsg('Access Denied or Student profile not found. Agents can only view their own assigned students.');
-          }
+        const st = (data.students || []).find((s: any) => s.id === id);
+        if (st) {
+          setStudent(st);
+          setSelectedStage(st.application?.status || '');
+        } else {
+          setErrorMsg('Access Denied or Student profile not found. Agents can only view their own assigned students.');
         }
       }
     } catch (err) {
@@ -125,23 +112,25 @@ export default function AgentStudentDetailsPage() {
     }
   };
 
-  const handleReviewDoc = async (docId: string, status: string) => {
+  const confirmReviewDoc = async () => {
+    if (!docToReview) return;
     try {
-      setReviewingDocId(docId);
+      setReviewingDocId(docToReview.id);
       setSuccessMsg(null);
       setErrorMsg(null);
 
-      const comment = commentText[docId] || '';
+      const comment = commentText[docToReview.id] || '';
 
-      const res = await fetch(`/api/documents/${docId}/review`, {
+      const res = await fetch(`/api/documents/${docToReview.id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, comment }),
+        body: JSON.stringify({ status: docToReview.status, comment }),
       });
 
       if (res.ok) {
-        setSuccessMsg(`Document reviewed successfully as ${status.toLowerCase().replace('_', ' ')}.`);
-        setCommentText(prev => ({ ...prev, [docId]: '' })); // Clear comment
+        setSuccessMsg(`Document reviewed successfully as ${docToReview.status.toLowerCase().replace('_', ' ')}.`);
+        setCommentText(prev => ({ ...prev, [docToReview.id]: '' })); // Clear comment
+        setDocToReview(null);
         loadStudentDetails(); // Reload data
       } else {
         const data = await res.json();
@@ -151,6 +140,20 @@ export default function AgentStudentDetailsPage() {
       setErrorMsg('Failed to connect to review service.');
     } finally {
       setReviewingDocId(null);
+    }
+  };
+
+  const handleReviewDoc = async (docId: string, status: string, docName: string) => {
+    if (status === 'APPROVED') {
+      // Direct action for approve (no double opt-in needed)
+      setDocToReview({ id: docId, status, name: docName });
+      // We still need to call it directly. Actually, better to just set the state and then manually run the same logic or just use the confirmReviewDoc function but call it immediately.
+      // Let's just set the state to trigger the modal for all, or wait, I want approve to be instant.
+      // I'll just write a quick inline fetch for approve to keep it instant, or I can just call the double opt-in for all of them so it's consistent. 
+      // Let's use the double opt in for all of them for consistency.
+      setDocToReview({ id: docId, status, name: docName });
+    } else {
+      setDocToReview({ id: docId, status, name: docName });
     }
   };
 
@@ -309,7 +312,7 @@ export default function AgentStudentDetailsPage() {
                           <div className="border-t border-slate-100 pt-4 space-y-3">
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleReviewDoc(doc.id, 'APPROVED')}
+                                onClick={() => handleReviewDoc(doc.id, 'APPROVED', doc.type)}
                                 disabled={reviewingDocId !== null}
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer"
                               >
@@ -317,7 +320,7 @@ export default function AgentStudentDetailsPage() {
                                 Approve
                               </button>
                               <button
-                                onClick={() => handleReviewDoc(doc.id, 'RESUBMISSION_REQUIRED')}
+                                onClick={() => handleReviewDoc(doc.id, 'RESUBMISSION_REQUIRED', doc.type)}
                                 disabled={reviewingDocId !== null}
                                 className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer"
                               >
@@ -325,7 +328,7 @@ export default function AgentStudentDetailsPage() {
                                 Request Resubmission
                               </button>
                               <button
-                                onClick={() => handleReviewDoc(doc.id, 'REJECTED')}
+                                onClick={() => handleReviewDoc(doc.id, 'REJECTED', doc.type)}
                                 disabled={reviewingDocId !== null}
                                 className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 cursor-pointer"
                               >
@@ -386,6 +389,43 @@ export default function AgentStudentDetailsPage() {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* Document Review Confirmation Modal */}
+        {docToReview && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-100">
+              <h3 className="font-bold text-slate-900 text-lg">
+                Confirm Document Review
+              </h3>
+              <p className="text-slate-600 text-sm font-light">
+                Are you sure you want to mark <strong>{docToReview.name.replace('_', ' ')}</strong> as <span className="font-semibold">{docToReview.status.replace('_', ' ').toLowerCase()}</span>?
+              </p>
+              
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setDocToReview(null)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmReviewDoc}
+                  className={`flex-1 font-semibold py-2.5 rounded-xl shadow-md transition-colors cursor-pointer ${
+                    docToReview.status === 'APPROVED' 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : docToReview.status === 'REJECTED'
+                      ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : 'bg-amber-600 hover:bg-amber-700 text-white'
+                  }`}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

@@ -24,15 +24,7 @@ export default function AgencyAdminSettingsPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600"></div>
-      </div>
-    );
-  }
 
-  if (!user) return null;
 
   // Prepopulate on user session load
   useEffect(() => {
