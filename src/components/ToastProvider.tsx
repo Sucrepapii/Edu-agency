@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useUser } from '@/hooks/useUser';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
@@ -30,8 +30,8 @@ export function useToast() {
 export default function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const { user } = useUser(false);
-  const [knownNotificationIds, setKnownNotificationIds] = useState<Set<string>>(new Set());
-  const [isFirstFetch, setIsFirstFetch] = useState(true);
+  const knownNotificationIds = useRef<Set<string>>(new Set());
+  const isFirstFetch = useRef(true);
 
   const showToast = (title: string, message: string, type: ToastMessage['type'] = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -51,8 +51,8 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
   // Poll for notifications
   useEffect(() => {
     if (!user) {
-      setKnownNotificationIds(new Set());
-      setIsFirstFetch(true);
+      knownNotificationIds.current = new Set();
+      isFirstFetch.current = true;
       return;
     }
 
@@ -63,15 +63,15 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
           const data = await res.json();
           const notifications = data.notifications || [];
           
-          if (isFirstFetch) {
+          if (isFirstFetch.current) {
             // First fetch after login: register all existing notifications as known
             const ids = new Set<string>(notifications.map((n: any) => n.id));
-            setKnownNotificationIds(ids);
-            setIsFirstFetch(false);
+            knownNotificationIds.current = ids;
+            isFirstFetch.current = false;
           } else {
             // Subsequent fetches: find new, unread notifications
             notifications.forEach((n: any) => {
-              if (!knownNotificationIds.has(n.id)) {
+              if (!knownNotificationIds.current.has(n.id)) {
                 // If it's unread, show a toast!
                 if (!n.read) {
                   showToast(
@@ -81,11 +81,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
                   );
                 }
                 // Add to known
-                setKnownNotificationIds((prev) => {
-                  const next = new Set(prev);
-                  next.add(n.id);
-                  return next;
-                });
+                knownNotificationIds.current.add(n.id);
               }
             });
           }
@@ -101,7 +97,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
     return () => {
       clearInterval(interval);
     };
-  }, [user, isFirstFetch, knownNotificationIds]);
+  }, [user]);
 
   return (
     <ToastContext.Provider value={{ toasts, showToast, removeToast }}>
