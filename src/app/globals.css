@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+@theme {
+  --color-primary-50: #f4f6f0;
+  --color-primary-100: #e6ebdb;
+  --color-primary-200: #ccd8b9;
+  --color-primary-500: #607d53;
+  --color-primary-600: #4b6240;
+  --color-primary-700: #3b4e33;
+  
+  --color-secondary-50: #fff5f5;
+  --color-secondary-100: #ffe3e3;
+  --color-secondary-500: #d92d20;
+  --color-secondary-600: #b42318;
+  --color-secondary-700: #912018;
+
+  /* Map cyan to Army Green to instantly update the branding */
+  --color-cyan-50: #f4f6f0;
+  --color-cyan-100: #e6ebdb;
+  --color-cyan-200: #ccd8b9;
+  --color-cyan-300: #adbfa3;
+  --color-cyan-400: #89a17b;
+  --color-cyan-500: #607d53;
+  --color-cyan-600: #4b6240;
+  --color-cyan-700: #3b4e33;
+  --color-cyan-800: #2f3e29;
+  --color-cyan-900: #263222;
+  --color-cyan-950: #131911;
+
+  /* Map red to Crimson Red */
+  --color-red-50: #fff5f5;
+  --color-red-100: #ffe3e3;
+  --color-red-200: #ffd0d0;
+  --color-red-300: #ffb3b3;
+  --color-red-400: #ff8787;
+  --color-red-500: #d92d20;
+  --color-red-600: #b42318;
+  --color-red-700: #912018;
+  --color-red-800: #7a271a;
+  --color-red-900: #551e17;
+  --color-red-950: #2c0c09;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Custom Scrollbars for messaging and sidebars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth transition utility classes */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-toast-progress {
+  animation: toastProgress 5s linear forwards;
+}

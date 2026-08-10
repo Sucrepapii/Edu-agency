@@ -1,0 +1,254 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  AGENCY_ADMIN
+  AGENT
+  STUDENT
+}
+
+enum AssignmentMode {
+  ADMIN_ONLY
+  ADMIN_AND_CLAIM
+}
+
+enum AssignmentStatus {
+  UNASSIGNED
+  ASSIGNED
+}
+
+enum ApplicationStage {
+  SUBMITTED
+  AGENT_ASSIGNED
+  DOCUMENTS_REQUIRED
+  DOCUMENTS_UNDER_REVIEW
+  DOCUMENTS_APPROVED
+  SCHOOL_SELECTION
+  APPLICATION_SUBMITTED_TO_SCHOOL
+  OFFER_RECEIVED
+  ADMISSION_CONFIRMED
+  VISA_PROCESSING
+  VISA_APPROVED
+  COMPLETED
+}
+
+enum DocumentStatus {
+  REQUIRED
+  UPLOADED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESUBMISSION_REQUIRED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+model Agency {
+  id             String         @id @default(uuid())
+  name           String
+  logo           String?
+  description    String?
+  email          String?
+  phone          String?
+  website        String?
+  address        String?
+  country        String?
+  assignmentMode AssignmentMode @default(ADMIN_ONLY)
+  status         String         @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt      DateTime       @default(now())
+
+  users               User[]
+  agents              Agent[]
+  students            Student[]
+  applications        Application[]
+  documents           Document[]
+  messages            Message[]
+  activityLogs        ActivityLog[]
+  agentChangeRequests AgentChangeRequest[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  password  String
+  role      Role
+  agencyId  String?
+  createdAt DateTime @default(now())
+
+  agency       Agency?       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agentProfile Agent?
+  studentProfile Student?
+  sentMessages Message[]     @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  notifications Notification[]
+  activityLogs ActivityLog[]
+}
+
+model Agent {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  agencyId       String
+  bio            String?
+  specialization String?
+  profilePhoto   String?
+  position       String?
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt      DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  students Student[] @relation("AgentToStudent")
+  applications Application[] @relation("AgentToApplication")
+  documents Document[] @relation("AgentToDocument")
+  currentChangeRequests AgentChangeRequest[] @relation("CurrentAgent")
+}
+
+model Student {
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  agencyId        String
+  assignedAgentId String?
+  assignmentStatus AssignmentStatus @default(UNASSIGNED)
+  createdAt       DateTime         @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency        Agency         @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  assignedAgent Agent?         @relation("AgentToStudent", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  application   Application?
+  documents     Document[]
+  messages      Message[]
+  activityLogs  ActivityLog[]
+  changeRequests AgentChangeRequest[]
+}
+
+model Application {
+  id                 String           @id @default(uuid())
+  studentId          String           @unique
+  agencyId           String
+  assignedAgentId    String?
+  status             ApplicationStage @default(SUBMITTED)
+  progressPercentage Int              @default(8) // 1/12 stage starts at ~8%
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  // Personal Information
+  fullName     String?
+  dob          String?
+  gender       String?
+  nationality  String?
+  phone        String?
+  email        String?
+  address      String?
+
+  // Education Background
+  highestQualification String?
+  institution          String?
+  course               String?
+  graduationYear       Int?
+  gpa                  String?
+
+  // Study Preferences
+  prefCountry String?
+  prefSchool  String?
+  prefCourse  String?
+  prefIntake  String?
+  budget      String?
+
+  // Additional Information
+  additionalInfo String?
+
+  student       Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency        Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  assignedAgent Agent?  @relation("AgentToApplication", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+  documents     Document[]
+}
+
+model Document {
+  id              String         @id @default(uuid())
+  studentId       String
+  applicationId   String?
+  agencyId        String
+  assignedAgentId String?
+  documentType    String
+  fileUrl         String?
+  status          DocumentStatus @default(REQUIRED)
+  comment         String?
+  uploadedAt      DateTime?
+  reviewedAt      DateTime?
+
+  student       Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  agency        Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  assignedAgent Agent?       @relation("AgentToDocument", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+}
+
+model Message {
+  id            String    @id @default(uuid())
+  senderId      String
+  receiverId    String
+  studentId     String
+  agencyId      String
+  message       String
+  attachmentUrl String?
+  createdAt     DateTime  @default(now())
+  readAt        DateTime?
+
+  sender   User    @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency   Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id            String   @id @default(uuid())
+  agencyId      String?
+  studentId     String?
+  applicationId String?
+  userId        String
+  action        String
+  description   String
+  createdAt     DateTime @default(now())
+
+  agency      Agency?      @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  student     Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AgentChangeRequest {
+  id             String        @id @default(uuid())
+  studentId      String
+  agencyId       String
+  currentAgentId String?
+  reason         String
+  status         RequestStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+
+  student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  agency       Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  currentAgent Agent?  @relation("CurrentAgent", fields: [currentAgentId], references: [id], onDelete: SetNull)
+}
