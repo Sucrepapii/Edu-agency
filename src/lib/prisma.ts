@@ -1,4 +1,5 @@
 import { readDb, writeDb, runLocked, uuid } from './db-local';
+import { PrismaClient } from '@prisma/client';
 
 // Prisma mock wrapper that mimics the exact schema relationships
 export class MockTable<T> {
@@ -366,7 +367,6 @@ const mockPrisma = {
 let exportDb: any;
 if (process.env.USE_REAL_PRISMA?.replace(/["']/g, '').toLowerCase() === 'true') {
   try {
-    const { PrismaClient } = require('@prisma/client');
     exportDb = new PrismaClient();
   } catch (err) {
     console.warn('Failed to load real PrismaClient, falling back to local JSON database.', err);
