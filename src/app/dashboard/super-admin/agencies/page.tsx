@@ -80,7 +80,7 @@ export default function SuperAdminAgenciesPage() {
         setName(''); setDescription(''); setEmail(''); setPhone(''); setCountry('');
         loadAgencies();
       } else {
-        setErrorMsg(data.error || 'Failed to create agency.');
+        setErrorMsg(data.details || data.error || 'Failed to create agency.');
       }
     } catch (err) {
       setErrorMsg('Connection failed.');

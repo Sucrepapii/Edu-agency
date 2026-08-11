@@ -87,7 +87,11 @@ export function handleApiError(error: any) {
     return NextResponse.json({ error: error.message }, { status: error.statusCode });
   }
   return NextResponse.json(
-    { error: 'An unexpected error occurred on the server.' },
+    { 
+      error: 'An unexpected error occurred on the server.',
+      details: error?.message || String(error),
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined 
+    },
     { status: 500 }
   );
 }
