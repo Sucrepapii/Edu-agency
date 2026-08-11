@@ -364,7 +364,7 @@ const mockPrisma = {
 
 // Export actual PrismaClient conditionally in production if configured
 let exportDb: any;
-if (process.env.USE_REAL_PRISMA === 'true') {
+if (process.env.USE_REAL_PRISMA?.replace(/["']/g, '').toLowerCase() === 'true') {
   try {
     const { PrismaClient } = require('@prisma/client');
     exportDb = new PrismaClient();
