@@ -8,9 +8,9 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(announcements);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch announcements:', error);
-    return NextResponse.json({ error: 'Failed to fetch announcements' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch announcements', details: String(error.message || error) }, { status: 500 });
   }
 }
 
