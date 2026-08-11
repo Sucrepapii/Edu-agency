@@ -16,12 +16,16 @@ export async function GET(request: Request) {
       : undefined;
 
     if (!token) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      const res = NextResponse.json({ user: null }, { status: 401 });
+      res.cookies.delete('auth-token');
+      return res;
     }
 
     const session = await getSessionUser(token);
     if (!session) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      const res = NextResponse.json({ user: null }, { status: 401 });
+      res.cookies.delete('auth-token');
+      return res;
     }
 
     // Fetch fresh user profile from DB to ensure no stale data
@@ -44,7 +48,9 @@ export async function GET(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      const res = NextResponse.json({ user: null }, { status: 401 });
+      res.cookies.delete('auth-token');
+      return res;
     }
 
     // Clean up sensitive fields
