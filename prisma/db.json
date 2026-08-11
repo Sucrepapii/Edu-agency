@@ -25,8 +25,9 @@
       "address": "200 Academy Boulevard",
       "country": "Canada",
       "assignmentMode": "ADMIN_ONLY",
-      "status": "ACTIVE",
-      "createdAt": "2026-08-10T13:18:55.807Z"
+      "status": "SUSPENDED",
+      "createdAt": "2026-08-10T13:18:55.807Z",
+      "updatedAt": "2026-08-11T09:46:02.570Z"
     },
     {
       "id": "agency-3",
@@ -465,7 +466,7 @@
       "assignedAgentId": "agent-1",
       "status": "COMPLETED",
       "progressPercentage": 100,
-      "fullName": "John Doe",
+      "fullName": "John Stone",
       "email": "john.doe@gmail.com",
       "phone": "+1 (555) 999-0000",
       "prefCountry": "Nigeria",
@@ -482,7 +483,9 @@
       "graduationYear": 2024,
       "gpa": "3.8 / 4.0",
       "createdAt": "2026-08-10T13:18:55.807Z",
-      "updatedAt": "2026-08-10T22:43:27.775Z"
+      "updatedAt": "2026-08-11T09:55:33.861Z",
+      "course": "",
+      "additionalInfo": ""
     },
     {
       "id": "app-student-2",
@@ -1541,11 +1544,12 @@
     {
       "id": "vvrga52ziplsfwdfz13rk",
       "createdAt": "2026-08-10T22:29:15.932Z",
-      "updatedAt": "2026-08-10T22:29:15.932Z",
+      "updatedAt": "2026-08-11T14:08:19.413Z",
       "userId": "user-admin1",
       "type": "STUDENT_CLAIMED",
       "title": "Student Profile Claimed",
-      "message": "Samuel White was claimed by agent Sarah Johnson."
+      "message": "Samuel White was claimed by agent Sarah Johnson.",
+      "read": true
     },
     {
       "id": "84ff962jvpmhon8mry7wnh",
@@ -1559,11 +1563,12 @@
     {
       "id": "qyvdchpnuhs90x0uhv3or",
       "createdAt": "2026-08-10T22:37:01.157Z",
-      "updatedAt": "2026-08-10T22:37:01.157Z",
+      "updatedAt": "2026-08-11T14:08:19.413Z",
       "userId": "user-admin1",
       "type": "STUDENT_CLAIMED",
       "title": "Student Profile Claimed",
-      "message": "Fatima Al-Mansoor was claimed by agent Sarah Johnson."
+      "message": "Fatima Al-Mansoor was claimed by agent Sarah Johnson.",
+      "read": true
     },
     {
       "id": "90jnm0faayc3f76k9ygnl6",
@@ -1573,6 +1578,16 @@
       "type": "STAGE_UPDATED",
       "title": "Application Progress Update",
       "message": "Your application stage has been updated to: \"completed\" (100% complete)."
+    },
+    {
+      "id": "7e9pwkkjddxwrzrca3xu",
+      "createdAt": "2026-08-11T09:55:33.878Z",
+      "updatedAt": "2026-08-11T14:08:19.413Z",
+      "userId": "user-admin1",
+      "type": "NEW_APPLICATION",
+      "title": "New Student Application",
+      "message": "John Doe has submitted their application and is awaiting agent assignment.",
+      "read": true
     }
   ],
   "activityLogs": [
@@ -1808,6 +1823,25 @@
       "userId": "user-superadmin",
       "action": "Agency Updated",
       "description": "Platform Super Admin updated agency: Apex Scholars Advisory. Status: SUSPENDED."
+    },
+    {
+      "id": "858oco16x4vml19179amm",
+      "createdAt": "2026-08-11T09:46:02.576Z",
+      "updatedAt": "2026-08-11T09:46:02.576Z",
+      "userId": "user-superadmin",
+      "action": "Agency Updated",
+      "description": "Platform Super Admin updated agency: Study Abroad Experts. Status: SUSPENDED."
+    },
+    {
+      "id": "2u24rdkuamrbooe5rm9l3",
+      "createdAt": "2026-08-11T09:55:33.870Z",
+      "updatedAt": "2026-08-11T09:55:33.870Z",
+      "agencyId": "agency-1",
+      "studentId": "student-1",
+      "applicationId": "app-student-1",
+      "userId": "user-stud1",
+      "action": "Application Submitted",
+      "description": "John Doe submitted their multi-step application form."
     }
   ],
   "agentChangeRequests": []

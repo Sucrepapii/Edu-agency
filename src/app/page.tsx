@@ -35,9 +35,6 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/90 z-0"></div>
         
         <div className="max-w-4xl mx-auto relative z-10 space-y-8 w-full">
-          <span className="inline-flex items-center rounded-full bg-cyan-900/40 px-3 py-1 text-sm font-medium text-cyan-400 border border-cyan-800/50 backdrop-blur-sm">
-            AI-Enhanced Admission Guidance
-          </span>
           
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight text-white drop-shadow-lg">
             Build Your Future <span className="text-red-500">Across Borders</span>

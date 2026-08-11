@@ -48,10 +48,9 @@ export async function POST(request: Request) {
     const {
       // Personal
       fullName, dob, gender, nationality, phone, email, address,
-      // Education
-      highestQualification, institution, course, graduationYear, gpa,
-      // Preferences
-      prefCountry, prefSchool, prefCourse, prefIntake, budget,
+      // Dynamic Arrays
+      educations,
+      studyPreferences,
       // Additional
       additionalInfo,
       // Flag to indicate final submission vs saving draft
@@ -71,9 +70,7 @@ export async function POST(request: Request) {
     let progressPercentage = currentApp.progressPercentage;
 
     if (isSubmitted && currentApp.status === 'SUBMITTED') {
-      // Wait, is it unassigned? If the student has submitted, it stays in SUBMITTED but status transitions to awaiting assignment
-      // Let's set target stage to SUBMITTED and keep progress percentage.
-      // E.g. Stage 1 is SUBMITTED (progress 8%).
+      // Keep it submitted
       targetStatus = 'SUBMITTED';
       progressPercentage = 8;
     }
@@ -82,10 +79,8 @@ export async function POST(request: Request) {
       where: { studentId: student.id },
       data: {
         fullName, dob, gender, nationality, phone, email, address,
-        highestQualification, institution, course, 
-        graduationYear: graduationYear ? parseInt(graduationYear) : null, 
-        gpa,
-        prefCountry, prefSchool, prefCourse, prefIntake, budget,
+        educations,
+        studyPreferences,
         additionalInfo,
         status: targetStatus,
         progressPercentage,

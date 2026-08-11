@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@/hooks/useUser';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Edit2, Search, HelpCircle, AlertCircle, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, HelpCircle, AlertCircle, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface AgentRow {
@@ -29,17 +29,17 @@ export default function AgencyAdminAgentsPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
   const [position, setPosition] = useState('');
   const [specialization, setSpecialization] = useState('');
   const [status, setStatus] = useState('ACTIVE');
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [agentToDelete, setAgentToDelete] = useState<AgentRow | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
 
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<React.ReactNode | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 
@@ -67,7 +67,7 @@ export default function AgencyAdminAgentsPage() {
 
   const handleCreateAgent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) return;
+    if (!name || !email) return;
 
     try {
       setSubmitting(true);
@@ -78,16 +78,24 @@ export default function AgencyAdminAgentsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, email, phone, password, position, specialization
+          name, email, phone, position, specialization
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSuccessMsg(`Successfully created agent ${name}!`);
+        setSuccessMsg(
+          <div>
+            <p>Successfully created agent {name}!</p>
+            <p className="mt-1">
+              Temporary Password: <span className="font-mono font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded ml-1">{data.generatedPassword}</span>
+            </p>
+            <p className="text-xs mt-1 opacity-80">Please securely share this password with the agent. They will be prompted to change it on their first login.</p>
+          </div>
+        );
         setIsCreateOpen(false);
         // Clear fields
-        setName(''); setEmail(''); setPhone(''); setPassword(''); setPosition(''); setSpecialization('');
+        setName(''); setEmail(''); setPhone(''); setPosition(''); setSpecialization('');
         loadAgents();
       } else {
         setErrorMsg(data.error || 'Failed to create agent.');
@@ -133,6 +141,32 @@ export default function AgencyAdminAgentsPage() {
     }
   };
 
+  const confirmDeleteAgent = async () => {
+    if (!agentToDelete) return;
+
+    try {
+      setSubmitting(true);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      const res = await fetch(`/api/admin/agents?id=${agentToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg(`Successfully deleted agent ${agentToDelete.user.name}.`);
+        setAgentToDelete(null);
+        loadAgents();
+      } else {
+        setErrorMsg(data.error || 'Failed to delete agent.');
+      }
+    } catch (err) {
+      setErrorMsg('Connection failed.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const openEditModal = (agent: AgentRow) => {
     setSelectedAgent(agent);
     setName(agent.user.name);
@@ -158,7 +192,7 @@ export default function AgencyAdminAgentsPage() {
       <Sidebar user={user!} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-6 overflow-y-auto">
         
         {/* Back Link */}
         <Link href="/dashboard/agency-admin" className="text-xs text-slate-500 hover:text-cyan-600 font-semibold inline-flex items-center gap-1.5 transition-colors">
@@ -245,13 +279,20 @@ export default function AgencyAdminAgentsPage() {
                           <span className="bg-red-50 text-red-700 font-semibold px-2 py-0.5 rounded-full text-xs">Inactive</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                      <td className="px-6 py-4 text-right whitespace-nowrap space-x-2">
                         <button
                           onClick={() => openEditModal(ag)}
                           className="bg-slate-100 hover:bg-cyan-50 hover:text-cyan-600 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
-                          Edit Profile
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setAgentToDelete(ag)}
+                          className="bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-all inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
                         </button>
                       </td>
                     </tr>
@@ -295,16 +336,6 @@ export default function AgencyAdminAgentsPage() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Password *</label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none text-xs"
                   />
                 </div>
@@ -430,7 +461,45 @@ export default function AgencyAdminAgentsPage() {
           </div>
         )}
 
+        {/* Delete Confirmation Modal */}
+        {agentToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-100">
+              <div className="flex items-start gap-4">
+                <div className="bg-red-100 p-2 rounded-full shrink-0">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Delete Agent</h3>
+                  <p className="text-slate-500 text-sm mt-1">
+                    Are you sure you want to completely delete the agent account for <span className="font-semibold text-slate-800">{agentToDelete.user.name}</span>? This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setAgentToDelete(null)}
+                  disabled={submitting}
+                  className="px-4 py-2 text-slate-500 hover:text-slate-700 font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteAgent}
+                  disabled={submitting}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {submitting ? 'Deleting...' : 'Yes, Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
 }
+

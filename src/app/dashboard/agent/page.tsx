@@ -88,7 +88,7 @@ export default function AgentDashboard() {
       <Sidebar user={user} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-8 overflow-y-auto">
         
         {/* Header */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
@@ -182,3 +182,4 @@ export default function AgentDashboard() {
     </div>
   );
 }
+

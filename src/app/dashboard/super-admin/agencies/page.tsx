@@ -124,7 +124,7 @@ export default function SuperAdminAgenciesPage() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">
       <Sidebar user={user} logout={logout} />
 
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-6 overflow-y-auto">
         
         {/* Back Link */}
         <Link href="/dashboard/super-admin" className="text-xs text-slate-500 hover:text-cyan-600 font-semibold inline-flex items-center gap-1.5 transition-colors">
@@ -192,7 +192,9 @@ export default function SuperAdminAgenciesPage() {
                     <tr key={ag.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4 font-semibold text-slate-800">
                         <div>
-                          <p>{ag.name}</p>
+                          <Link href={`/dashboard/super-admin/agencies/${ag.id}`} className="font-semibold hover:text-cyan-600 transition-colors">
+                            {ag.name}
+                          </Link>
                           <p className="text-slate-400 text-[10px] font-light truncate max-w-[150px]">{ag.id}</p>
                         </div>
                       </td>
@@ -342,3 +344,4 @@ export default function SuperAdminAgenciesPage() {
     </div>
   );
 }
+

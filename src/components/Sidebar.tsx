@@ -20,6 +20,10 @@ export default function Sidebar({ user, logout }: SidebarProps) {
   
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -62,7 +66,10 @@ export default function Sidebar({ user, logout }: SidebarProps) {
       case 'SUPER_ADMIN':
         return [
           { label: 'Overview', href: '/dashboard/super-admin', icon: LayoutDashboard },
+          { label: 'Finances', href: '/dashboard/super-admin/finances', icon: FileText },
           { label: 'Agencies', href: '/dashboard/super-admin/agencies', icon: ShieldAlert },
+          { label: 'Announcements', href: '/dashboard/super-admin/announcements', icon: MessageSquare },
+          { label: 'Settings', href: '/dashboard/super-admin/settings', icon: Settings },
         ];
       case 'AGENCY_ADMIN':
         return [
@@ -76,6 +83,7 @@ export default function Sidebar({ user, logout }: SidebarProps) {
           { label: 'Dashboard', href: '/dashboard/agent', icon: LayoutDashboard },
           { label: 'My Students', href: '/dashboard/agent/students', icon: Users },
           { label: 'Messages', href: '/dashboard/agent/messages', icon: MessageSquare },
+          { label: 'Profile Settings', href: '/dashboard/agent/profile', icon: Settings },
         ];
         // Only show Available Students link if agency has claim enabled
         if (user.agency?.assignmentMode === 'ADMIN_AND_CLAIM') {
@@ -97,8 +105,90 @@ export default function Sidebar({ user, logout }: SidebarProps) {
 
   const links = getSidebarLinks();
 
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      setPasswordError(null);
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Refresh the page to reload user session
+        window.location.reload();
+      } else {
+        setPasswordError(data.error || 'Failed to update password.');
+      }
+    } catch (err) {
+      setPasswordError('Connection error.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
     <>
+      {user?.forcePasswordChange && (
+        <div className="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-red-400"></div>
+            <div className="text-center mb-6">
+              <ShieldAlert className="h-12 w-12 text-red-500 mx-auto mb-3" />
+              <h2 className="text-2xl font-bold text-white tracking-tight">Security Required</h2>
+              <p className="text-slate-400 text-sm font-light mt-2">You must change your auto-generated temporary password before accessing the dashboard.</p>
+            </div>
+            <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">New Password</label>
+                <input 
+                  type="password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
+                <input 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
+              {passwordError && (
+                <div className="text-red-400 text-xs text-center font-medium bg-red-950/50 py-2 rounded border border-red-900/50">
+                  {passwordError}
+                </div>
+              )}
+              <button 
+                type="submit" 
+                disabled={isChangingPassword}
+                className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-red-500/25 transition-all mt-4 disabled:opacity-50"
+              >
+                {isChangingPassword ? 'Updating...' : 'Update Password & Continue'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Burger Menu Button */}
       <div className="lg:hidden bg-slate-900 text-white h-16 px-4 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center space-x-2">
@@ -172,17 +262,15 @@ export default function Sidebar({ user, logout }: SidebarProps) {
                 )}
               </div>
               <div className="overflow-y-auto divide-y divide-slate-800/50 flex-1">
-                {notifications.length === 0 ? (
+                {unreadCount === 0 ? (
                   <div className="p-4 text-center text-xs text-slate-500 font-light">
-                    No notifications
+                    No new notifications
                   </div>
                 ) : (
-                  notifications.map((n) => (
+                  notifications.filter(n => !n.read).map((n) => (
                     <div 
                       key={n.id} 
-                      className={`p-3 text-xs transition-colors hover:bg-slate-800/40 ${
-                        !n.read ? 'bg-slate-800/20 font-medium border-l-2 border-red-500' : 'text-slate-400 font-light'
-                      }`}
+                      className="p-3 text-xs transition-colors hover:bg-slate-800/40 bg-slate-800/20 font-medium border-l-2 border-red-500"
                     >
                       <p className="text-white font-semibold">{n.title}</p>
                       <p className="text-slate-400 text-[11px] mt-0.5 leading-snug">{n.message}</p>

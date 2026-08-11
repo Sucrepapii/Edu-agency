@@ -33,7 +33,6 @@ export async function POST(request: Request) {
       await prisma.notification.updateMany({
         where: {
           userId: user.id,
-          read: false,
         },
         data: {
           read: true,

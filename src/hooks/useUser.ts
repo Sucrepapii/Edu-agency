@@ -8,6 +8,7 @@ export interface UserSession {
   name: string;
   email: string;
   phone?: string;
+  forcePasswordChange?: boolean;
   role: 'SUPER_ADMIN' | 'AGENCY_ADMIN' | 'AGENT' | 'STUDENT';
   agencyId: string | null;
   agency?: {

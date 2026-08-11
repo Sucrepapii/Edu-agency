@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Multi-tenant portal for managing study abroad students, agents, applications, and documents.",
 };
 
+import GlobalAnnouncements from "@/components/GlobalAnnouncements";
+
 export default function RootLayout({
   children,
 }: {
@@ -19,6 +21,7 @@ export default function RootLayout({
     <html lang="en" className="h-full bg-slate-50" suppressHydrationWarning>
       <body className={`${inter.className} min-h-full flex flex-col text-slate-900 antialiased`} suppressHydrationWarning>
         <ToastProvider>
+          <GlobalAnnouncements />
           {children}
         </ToastProvider>
       </body>

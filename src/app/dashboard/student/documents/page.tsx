@@ -110,7 +110,7 @@ export default function StudentDocumentsPage() {
       <Sidebar user={user} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-6 overflow-y-auto">
         
         {/* Back Link */}
         <Link href="/dashboard/student" className="text-xs text-slate-500 hover:text-cyan-600 font-semibold inline-flex items-center gap-1.5 transition-colors">
@@ -208,16 +208,18 @@ export default function StudentDocumentsPage() {
                             </a>
                           )}
                           
-                          <label className="bg-slate-100 hover:bg-cyan-50 hover:text-cyan-600 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer inline-flex items-center gap-1">
-                            <FileUp className="h-3.5 w-3.5" />
-                            {doc.fileUrl ? 'Replace' : 'Upload'}
-                            <input
-                              type="file"
-                              disabled={uploading}
-                              className="hidden"
-                              onChange={(e) => handleFileUpload(e, doc.documentType)}
-                            />
-                          </label>
+                          {doc.status !== 'APPROVED' && (
+                            <label className={`bg-slate-100 hover:bg-cyan-50 hover:text-cyan-600 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer inline-flex items-center gap-1 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                              <FileUp className="h-3.5 w-3.5" />
+                              {doc.fileUrl ? 'Replace' : 'Upload'}
+                              <input
+                                type="file"
+                                disabled={uploading}
+                                className="hidden"
+                                onChange={(e) => handleFileUpload(e, doc.documentType)}
+                              />
+                            </label>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -232,3 +234,4 @@ export default function StudentDocumentsPage() {
     </div>
   );
 }
+

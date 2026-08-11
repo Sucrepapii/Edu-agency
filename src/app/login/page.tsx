@@ -173,14 +173,17 @@ function LoginContent() {
           <div className="pt-8 mt-8 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">Quick Demo Accounts</p>
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <button onClick={() => handleQuickLogin('superadmin@platform.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
+              <button type="button" onClick={() => handleQuickLogin('superadmin@platform.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
                 <p className="font-bold text-slate-800 group-hover:text-red-700">Super Admin</p>
               </button>
-              <button onClick={() => handleQuickLogin('sarah.j@globaledu.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
+              <button type="button" onClick={() => handleQuickLogin('admin1@globaledu.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
+                <p className="font-bold text-slate-800 group-hover:text-red-700">Agency Admin</p>
+              </button>
+              <button type="button" onClick={() => handleQuickLogin('sarah.j@globaledu.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
                 <p className="font-bold text-slate-800 group-hover:text-red-700">Agent</p>
               </button>
-              <button onClick={() => handleQuickLogin('john.doe@gmail.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group col-span-2">
-                <p className="font-bold text-slate-800 group-hover:text-red-700">Assigned Student (John Doe)</p>
+              <button type="button" onClick={() => handleQuickLogin('john.doe@gmail.com')} className="border border-slate-200 hover:border-red-500 hover:bg-red-50/50 p-3 rounded-xl text-left transition-all cursor-pointer group">
+                <p className="font-bold text-slate-800 group-hover:text-red-700">Student</p>
               </button>
             </div>
           </div>

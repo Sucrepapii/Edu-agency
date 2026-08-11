@@ -1,6 +1,7 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -87,6 +88,7 @@ model User {
   password  String
   role      Role
   agencyId  String?
+  forcePasswordChange Boolean @default(false)
   createdAt DateTime @default(now())
 
   agency       Agency?       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
@@ -155,19 +157,23 @@ model Application {
   email        String?
   address      String?
 
-  // Education Background
+  // Education Background (Legacy - keeping for fallback)
   highestQualification String?
   institution          String?
   course               String?
   graduationYear       Int?
   gpa                  String?
 
-  // Study Preferences
+  // Study Preferences (Legacy - keeping for fallback)
   prefCountry String?
   prefSchool  String?
   prefCourse  String?
   prefIntake  String?
   budget      String?
+
+  // New Dynamic Arrays
+  educations       Json?
+  studyPreferences Json?
 
   // Additional Information
   additionalInfo String?
@@ -302,4 +308,19 @@ model Payment {
   createdAt        DateTime      @default(now())
 
   invoice          Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model PlatformAnnouncement {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model GlobalSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }

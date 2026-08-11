@@ -172,7 +172,7 @@ export default function AgentStudentDetailsPage() {
       <Sidebar user={user} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-5xl mx-auto w-full space-y-8 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-8 overflow-y-auto">
         
         {/* Back Link & Header */}
         <div className="space-y-4">

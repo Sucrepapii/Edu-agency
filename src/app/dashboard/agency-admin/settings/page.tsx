@@ -88,7 +88,7 @@ export default function AgencyAdminSettingsPage() {
       <Sidebar user={user} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-4xl mx-auto w-full space-y-6 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-6 overflow-y-auto">
         
         {/* Back Link */}
         <Link href="/dashboard/agency-admin" className="text-xs text-slate-500 hover:text-cyan-600 font-semibold inline-flex items-center gap-1.5 transition-colors">
@@ -272,3 +272,4 @@ export default function AgencyAdminSettingsPage() {
     </div>
   );
 }
+

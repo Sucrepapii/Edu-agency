@@ -70,6 +70,7 @@ export async function POST(request: Request) {
         email: user.email,
         role: user.role,
         agencyId: user.agencyId,
+        forcePasswordChange: user.forcePasswordChange,
       },
     });
 

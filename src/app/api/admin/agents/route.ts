@@ -50,15 +50,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, email, phone, password, position, bio, specialization, profilePhoto, targetAgencyId } = body;
+    const { name, email, phone, position, bio, specialization, profilePhoto, targetAgencyId } = body;
 
     const actualAgencyId = user.role === 'SUPER_ADMIN' ? targetAgencyId : agencyId;
     if (!actualAgencyId) {
       throw new ApiError('Agency ID is required.', 400);
     }
 
-    if (!name || !email || !password) {
-      throw new ApiError('Name, Email, and Password are required.', 400);
+    if (!name || !email) {
+      throw new ApiError('Name and Email are required.', 400);
     }
 
     // Check duplicate
@@ -70,7 +70,9 @@ export async function POST(request: Request) {
       throw new ApiError('A user with this email already exists.', 400);
     }
 
-    const hashedPassword = await hashPassword(password);
+    // Generate random 8 character alphanumeric password
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await hashPassword(generatedPassword);
 
     // Create user with AGENT role
     const newUser = await prisma.user.create({
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         role: 'AGENT',
         agencyId: actualAgencyId,
+        forcePasswordChange: true,
       },
     });
 
@@ -113,6 +116,7 @@ export async function POST(request: Request) {
         ...agentProfile,
         user: newUser,
       },
+      generatedPassword,
     });
   } catch (error: any) {
     return handleApiError(error);
@@ -185,6 +189,56 @@ export async function PUT(request: Request) {
         user: updatedUser,
       },
     });
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const user = await getAuthUser(request);
+    if (user.role !== 'AGENCY_ADMIN' && user.role !== 'SUPER_ADMIN') {
+      throw new ApiError('Unauthorized. Only Admins can delete agents.', 403);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const agentId = searchParams.get('id');
+
+    if (!agentId) {
+      throw new ApiError('Agent ID is required.', 400);
+    }
+
+    const agent = await prisma.agent.findUnique({
+      where: { id: agentId },
+      include: { user: true },
+    });
+
+    if (!agent) {
+      throw new ApiError('Agent not found.', 404);
+    }
+
+    // Verify tenant
+    if (user.role !== 'SUPER_ADMIN' && agent.agencyId !== user.agencyId) {
+      throw new ApiError('Access Denied. Cannot delete agents from other agencies.', 403);
+    }
+
+    // Delete User (which cascades to Agent, AgentChangeRequest, ActivityLog if mapped properly, else delete agent first)
+    // The schema specifies `Agent` has onDelete: Cascade for `user` relation. So deleting the user deletes the agent profile.
+    await prisma.user.delete({
+      where: { id: agent.userId },
+    });
+
+    // Log Activity
+    await prisma.activityLog.create({
+      data: {
+        agencyId: agent.agencyId,
+        userId: user.id,
+        action: 'Agent Account Deleted',
+        description: `Deleted Agent account for ${agent.user.name} (${agent.user.email}).`,
+      },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return handleApiError(error);
   }

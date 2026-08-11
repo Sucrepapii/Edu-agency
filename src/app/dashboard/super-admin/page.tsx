@@ -140,7 +140,7 @@ export default function SuperAdminDashboard() {
       <Sidebar user={user!} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-8 overflow-y-auto">
         
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-200 pb-4">
@@ -374,3 +374,4 @@ export default function SuperAdminDashboard() {
     </div>
   );
 }
+

@@ -3,9 +3,37 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@/hooks/useUser';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, ArrowRight, Save, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, CheckCircle, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import AsyncCreatableSelect from 'react-select/async-creatable';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { COUNTRIES, QUALIFICATIONS, PROGRAM_CATEGORIES, YEARS } from '@/lib/constants';
+
+const getSelectStyles = (isError: boolean = false) => ({
+  control: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: '#f8fafc',
+    borderColor: isError ? '#ef4444' : (state.isFocused ? '#06b6d4' : '#e2e8f0'),
+    boxShadow: state.isFocused ? (isError ? '0 0 0 2px rgba(239, 68, 68, 0.2)' : '0 0 0 2px rgba(6, 182, 212, 0.2)') : 'none',
+    borderRadius: '0.5rem',
+    padding: '0.15rem',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s ease',
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected ? '#06b6d4' : state.isFocused ? '#ecfeff' : 'white',
+    color: state.isSelected ? 'white' : '#334155',
+    fontSize: '0.875rem',
+    cursor: 'pointer',
+  }),
+});
+
+const customSelectStyles = getSelectStyles(false);
 
 export default function StudentApplicationForm() {
   const { user, loading, logout, mutate } = useUser();
@@ -21,28 +49,40 @@ export default function StudentApplicationForm() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
 
-  const [highestQualification, setHighestQualification] = useState('');
-  const [institution, setInstitution] = useState('');
-  const [course, setCourse] = useState('');
-  const [graduationYear, setGraduationYear] = useState('');
-  const [gpa, setGpa] = useState('');
-
-  const [prefCountry, setPrefCountry] = useState('');
-  const [prefSchool, setPrefSchool] = useState('');
-  const [prefCourse, setPrefCourse] = useState('');
-  const [prefIntake, setPrefIntake] = useState('');
-  const [budget, setBudget] = useState('');
+  const [educations, setEducations] = useState<any[]>([{ highestQualification: '', institution: '', course: '', graduationYear: '', gpa: '' }]);
+  const [studyPreferences, setStudyPreferences] = useState<any[]>([{ prefCountry: '', prefSchool: '', prefCourse: '', prefIntake: '', budget: '' }]);
 
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
+
+  // Load Institution Options dynamically from API proxy
+  const loadInstitutionOptions = async (inputValue: string, country?: string) => {
+    try {
+      let url = `/api/universities?name=${encodeURIComponent(inputValue || 'University')}`;
+      if (country) {
+        url += `&country=${encodeURIComponent(country)}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.slice(0, 50).map((uni: any) => ({
+        value: uni.name,
+        label: uni.name
+      }));
+    } catch (e) {
+      console.error('Failed to fetch universities', e);
+      return [];
+    }
+  };
 
   // Pre-populate fields on mount
   useEffect(() => {
     if (user?.studentProfile?.application) {
-      const app = user.studentProfile.application;
+      const app = user.studentProfile.application as any;
       setFullName(app.fullName || user.name || '');
       setDob(app.dob || '');
       setGender(app.gender || '');
@@ -51,19 +91,36 @@ export default function StudentApplicationForm() {
       setEmail(app.email || user.email || '');
       setAddress(app.address || '');
 
-      setHighestQualification(app.highestQualification || '');
-      setInstitution(app.institution || '');
-      setCourse(app.course || '');
-      setGraduationYear(app.graduationYear ? app.graduationYear.toString() : '');
-      setGpa(app.gpa || '');
+      // Load Educations (JSON or fallback to legacy)
+      if (app.educations && Array.isArray(app.educations) && app.educations.length > 0) {
+        setEducations(app.educations);
+      } else if (app.institution || app.highestQualification) {
+        setEducations([{
+          highestQualification: app.highestQualification || '',
+          institution: app.institution || '',
+          course: app.course || '',
+          graduationYear: app.graduationYear ? app.graduationYear.toString() : '',
+          gpa: app.gpa || ''
+        }]);
+      }
 
-      setPrefCountry(app.prefCountry || '');
-      setPrefSchool(app.prefSchool || '');
-      setPrefCourse(app.prefCourse || '');
-      setPrefIntake(app.prefIntake || '');
-      setBudget(app.budget || '');
+      // Load Preferences (JSON or fallback to legacy)
+      if (app.studyPreferences && Array.isArray(app.studyPreferences) && app.studyPreferences.length > 0) {
+        setStudyPreferences(app.studyPreferences);
+      } else if (app.prefCountry || app.prefSchool) {
+        setStudyPreferences([{
+          prefCountry: app.prefCountry || '',
+          prefSchool: app.prefSchool || '',
+          prefCourse: app.prefCourse || '',
+          prefIntake: app.prefIntake || '',
+          budget: app.budget || ''
+        }]);
+      }
 
       setAdditionalInfo(app.additionalInfo || '');
+      if (app.status === 'SUBMITTED' || app.status === 'REVIEW' || app.status === 'APPROVED') {
+        setIsSubmitted(true);
+      }
     }
   }, [user]);
 
@@ -77,29 +134,53 @@ export default function StudentApplicationForm() {
 
   if (!user) return null;
 
-  const saveApplication = async (isSubmitted = false) => {
+  const saveApplication = async (submitStatus = false) => {
     try {
       setSaving(true);
       setErrorMsg(null);
       setSuccessMsg(null);
+
+      // Basic Validation if submitting
+      if (submitStatus) {
+        if (!fullName || !dob || !gender || !nationality || !phone) {
+          setErrorMsg('Please fill in all mandatory fields in Step 1.');
+          setSaving(false);
+          return;
+        }
+        for (const edu of educations) {
+          if (!edu.highestQualification || !edu.institution || !edu.course || !edu.graduationYear) {
+            setErrorMsg('Please fill in all mandatory fields in your Education Background.');
+            setSaving(false);
+            return;
+          }
+        }
+        for (const pref of studyPreferences) {
+          if (!pref.prefCountry || !pref.prefCourse) {
+            setErrorMsg('Please fill in at least Country and Course for all Study Preferences.');
+            setSaving(false);
+            return;
+          }
+        }
+      }
 
       const res = await fetch('/api/student/application', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName, dob, gender, nationality, phone, email, address,
-          highestQualification, institution, course, graduationYear, gpa,
-          prefCountry, prefSchool, prefCourse, prefIntake, budget,
+          educations,
+          studyPreferences,
           additionalInfo,
-          isSubmitted,
+          isSubmitted: submitStatus, // whether to transition to SUBMITTED state
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSuccessMsg(isSubmitted ? 'Application submitted successfully!' : 'Draft saved successfully.');
+        setSuccessMsg(submitStatus ? 'Application submitted successfully!' : 'Draft saved successfully.');
+        setIsSubmitted(submitStatus || isSubmitted);
         await mutate(); // Refresh session data
-        if (isSubmitted) {
+        if (submitStatus) {
           setTimeout(() => {
             router.push('/dashboard/student');
           }, 1500);
@@ -114,12 +195,52 @@ export default function StudentApplicationForm() {
     }
   };
 
+  const canAccessStep = (targetStep: number) => {
+    if (targetStep === 1) return true;
+    const step1Valid = Boolean(fullName && dob && gender && nationality && phone);
+    if (targetStep === 2) return step1Valid;
+    const step2Valid = educations.every(edu => edu.highestQualification && edu.institution && edu.course && edu.graduationYear);
+    if (targetStep === 3) return step1Valid && step2Valid;
+    const step3Valid = studyPreferences.every(pref => pref.prefCountry && pref.prefCourse);
+    if (targetStep === 4) return step1Valid && step2Valid && step3Valid;
+    return false;
+  };
+
+  const handleNextStep = () => {
+    if (canProceedToNextStep()) {
+      setShowValidation(false);
+      setStep(prev => Math.min(4, prev + 1));
+    } else {
+      setShowValidation(true);
+      setErrorMsg("Please fill in all mandatory fields before proceeding.");
+      setTimeout(() => setErrorMsg(null), 4000);
+    }
+  };
+
+  const canProceedToNextStep = () => {
+    if (step === 1) return Boolean(fullName && dob && gender && nationality && phone && email && address);
+    if (step === 2) return educations.every(edu => edu.highestQualification && edu.institution && edu.course && edu.graduationYear && edu.gpa);
+    if (step === 3) return studyPreferences.every(pref => pref.prefCountry && pref.prefSchool && pref.prefCourse && pref.prefIntake && pref.budget);
+    if (step === 4) return Boolean(additionalInfo);
+    return false;
+  };
+
+  const handleSubmitApplication = () => {
+    if (!canProceedToNextStep()) {
+      setShowValidation(true);
+      setErrorMsg("Please fill in all mandatory fields before submitting.");
+      setTimeout(() => setErrorMsg(null), 4000);
+      return;
+    }
+    saveApplication(true);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">
       <Sidebar user={user} logout={logout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-10 max-w-4xl mx-auto w-full space-y-6 overflow-y-auto">
+      <main className="flex-1 p-6 lg:p-10 w-full space-y-6 overflow-y-auto">
         
         {/* Back Link */}
         <Link href="/dashboard/student" className="text-xs text-slate-500 hover:text-cyan-600 font-semibold inline-flex items-center gap-1.5 transition-colors">
@@ -153,8 +274,11 @@ export default function StudentApplicationForm() {
           ].map((s) => (
             <button
               key={s.stepNum}
-              onClick={() => setStep(s.stepNum)}
-              className="flex items-center space-x-2 text-left shrink-0 focus:outline-none"
+              onClick={() => {
+                if (canAccessStep(s.stepNum)) setStep(s.stepNum);
+              }}
+              disabled={!canAccessStep(s.stepNum)}
+              className={`flex items-center space-x-2 text-left shrink-0 focus:outline-none transition-opacity ${!canAccessStep(s.stepNum) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <div
                 className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm border transition-all ${
@@ -202,47 +326,56 @@ export default function StudentApplicationForm() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Legal Name</label>
                   <input
                     type="text"
+                    placeholder="John Doe"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
+                    className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${showValidation && !fullName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
+                  <div className="relative">
+                    <DatePicker
+                      selected={dob ? new Date(dob) : null}
+                      onChange={(date: Date | null) => setDob(date ? date.toISOString().split('T')[0] : '')}
+                      dateFormat="yyyy-MM-dd"
+                      showYearDropdown
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      maxDate={new Date()}
+                      placeholderText="YYYY-MM-DD"
+                      className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 pl-10 text-sm focus:outline-none focus:ring-2 transition-all ${showValidation && !dob ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
+                      wrapperClassName="w-full"
+                    />
+                    <CalendarIcon className="absolute left-3 top-2.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gender</label>
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm appearance-none cursor-pointer"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other / Prefer not to say</option>
-                  </select>
+                  <Select
+                    options={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Other', label: 'Other / Prefer not to say' }]}
+                    value={gender ? { value: gender, label: gender } : null}
+                    onChange={(selected: any) => setGender(selected?.value || '')}
+                    isClearable
+                    placeholder="Select gender..."
+                    styles={getSelectStyles(showValidation && !gender)}
+                  />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Nationality</label>
-                  <input
-                    type="text"
-                    placeholder="Nigeria"
-                    value={nationality}
-                    onChange={(e) => setNationality(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
+                  <Select
+                    options={COUNTRIES.map(c => ({ value: c, label: c }))}
+                    value={nationality ? { value: nationality, label: nationality } : null}
+                    onChange={(selected: any) => setNationality(selected?.value || '')}
+                    isClearable
+                    placeholder="Search country..."
+                    styles={getSelectStyles(showValidation && !nationality)}
                   />
                 </div>
                 <div className="space-y-1">
@@ -251,7 +384,7 @@ export default function StudentApplicationForm() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
+                    className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${showValidation && !phone ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
                   />
                 </div>
               </div>
@@ -273,7 +406,7 @@ export default function StudentApplicationForm() {
                     placeholder="123 Street Address, Lagos"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
+                    className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${showValidation && !address ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
                   />
                 </div>
               </div>
@@ -283,126 +416,224 @@ export default function StudentApplicationForm() {
           {/* STEP 2: Education Background */}
           {step === 2 && (
             <div className="space-y-6">
-              <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Step 2: Education Background</h3>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 className="font-bold text-slate-800">Step 2: Education Background</h3>
+                <button
+                  onClick={() => setEducations([...educations, { highestQualification: '', institution: '', course: '', graduationYear: '', gpa: '' }])}
+                  className="text-xs bg-cyan-50 text-cyan-700 hover:bg-cyan-100 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  + Add Education
+                </button>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Highest Qualification</label>
-                  <input
-                    type="text"
-                    placeholder="High School Diploma, Bachelor of Science, etc."
-                    value={highestQualification}
-                    onChange={(e) => setHighestQualification(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Institution Name</label>
-                  <input
-                    type="text"
-                    placeholder="University of West Africa"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-              </div>
+              {educations.map((edu, index) => (
+                <div key={index} className="space-y-6 pb-6 border-b border-slate-100 last:border-0 relative">
+                  {educations.length > 1 && (
+                    <button
+                      onClick={() => setEducations(educations.filter((_, i) => i !== index))}
+                      className="absolute right-0 top-0 text-red-500 hover:text-red-700 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md"
+                    >
+                      Remove
+                    </button>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Qualification / Degree</label>
+                      <Select
+                        options={QUALIFICATIONS.map(q => ({ value: q, label: q }))}
+                        value={edu.highestQualification ? { value: edu.highestQualification, label: edu.highestQualification } : null}
+                        onChange={(selected: any) => {
+                          const newEd = [...educations];
+                          newEd[index].highestQualification = selected?.value || '';
+                          setEducations(newEd);
+                        }}
+                        isClearable
+                        placeholder="Select qualification..."
+                        styles={getSelectStyles(showValidation && !edu.highestQualification)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Institution Name</label>
+                      <AsyncCreatableSelect
+                        cacheOptions
+                        defaultOptions
+                        loadOptions={(inputValue) => loadInstitutionOptions(inputValue)}
+                        value={edu.institution ? { value: edu.institution, label: edu.institution } : null}
+                        onChange={(selected: any) => {
+                          const newEd = [...educations];
+                          newEd[index].institution = selected?.value || '';
+                          setEducations(newEd);
+                        }}
+                        isClearable
+                        placeholder="Type to search worldwide institutions..."
+                        styles={getSelectStyles(showValidation && !edu.institution)}
+                        formatCreateLabel={(inputValue) => `Add "${inputValue}"`}
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Course / Major</label>
-                  <input
-                    type="text"
-                    placeholder="Science & Math"
-                    value={course}
-                    onChange={(e) => setCourse(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Course of Study</label>
+                      <CreatableSelect
+                        options={PROGRAM_CATEGORIES.map(p => ({ value: p, label: p }))}
+                        value={edu.course ? { value: edu.course, label: edu.course } : null}
+                        onChange={(selected: any) => {
+                          const newEd = [...educations];
+                          newEd[index].course = selected?.value || '';
+                          setEducations(newEd);
+                        }}
+                        isClearable
+                        placeholder="Select or type course name..."
+                        styles={getSelectStyles(showValidation && !edu.course)}
+                        formatCreateLabel={(inputValue) => `Add custom course: "${inputValue}"`}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Grad. Year</label>
+                        <Select
+                          options={YEARS.map(y => ({ value: y, label: y }))}
+                          value={edu.graduationYear ? { value: edu.graduationYear, label: edu.graduationYear } : null}
+                          onChange={(selected: any) => {
+                            const newEd = [...educations];
+                            newEd[index].graduationYear = selected?.value || '';
+                            setEducations(newEd);
+                          }}
+                          isClearable
+                          placeholder="Year"
+                          styles={getSelectStyles(showValidation && !edu.graduationYear)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cumulative GPA</label>
+                        <input
+                          type="text"
+                          placeholder="3.8 / 4.0"
+                          value={edu.gpa}
+                          onChange={(e) => {
+                            const newEd = [...educations];
+                            newEd[index].gpa = e.target.value;
+                            setEducations(newEd);
+                          }}
+                          className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 outline-none transition-all text-sm focus:ring-2 ${showValidation && !edu.gpa ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Graduation Year</label>
-                  <input
-                    type="number"
-                    placeholder="2024"
-                    value={graduationYear}
-                    onChange={(e) => setGraduationYear(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cumulative GPA / Grade</label>
-                  <input
-                    type="text"
-                    placeholder="3.8 / 4.0 or Upper Second Class"
-                    value={gpa}
-                    onChange={(e) => setGpa(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
           )}
 
           {/* STEP 3: Study Preferences */}
           {step === 3 && (
             <div className="space-y-6">
-              <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Step 3: Study Preferences</h3>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 className="font-bold text-slate-800">Step 3: Study Preferences</h3>
+                <button
+                  onClick={() => setStudyPreferences([...studyPreferences, { prefCountry: '', prefSchool: '', prefCourse: '', prefIntake: '', budget: '' }])}
+                  className="text-xs bg-cyan-50 text-cyan-700 hover:bg-cyan-100 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  + Add Preference
+                </button>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Country</label>
-                  <input
-                    type="text"
-                    placeholder="Canada, United Kingdom, USA"
-                    value={prefCountry}
-                    onChange={(e) => setPrefCountry(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred School (If any)</label>
-                  <input
-                    type="text"
-                    placeholder="University of Toronto"
-                    value={prefSchool}
-                    onChange={(e) => setPrefSchool(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-              </div>
+              {studyPreferences.map((pref, index) => (
+                <div key={index} className="space-y-6 pb-6 border-b border-slate-100 last:border-0 relative">
+                  {studyPreferences.length > 1 && (
+                    <button
+                      onClick={() => setStudyPreferences(studyPreferences.filter((_, i) => i !== index))}
+                      className="absolute right-0 top-0 text-red-500 hover:text-red-700 text-xs font-semibold bg-red-50 px-2 py-1 rounded-md"
+                    >
+                      Remove
+                    </button>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Country</label>
+                      <Select
+                        options={COUNTRIES.map(c => ({ value: c, label: c }))}
+                        value={pref.prefCountry ? { value: pref.prefCountry, label: pref.prefCountry } : null}
+                        onChange={(selected: any) => {
+                          const newPref = [...studyPreferences];
+                          newPref[index].prefCountry = selected?.value || '';
+                          setStudyPreferences(newPref);
+                        }}
+                        isClearable
+                        placeholder="Select country..."
+                        styles={getSelectStyles(showValidation && !pref.prefCountry)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred School (If any)</label>
+                      <AsyncCreatableSelect
+                        key={pref.prefCountry || 'global'}
+                        cacheOptions
+                        defaultOptions
+                        loadOptions={(inputValue) => loadInstitutionOptions(inputValue, pref.prefCountry)}
+                        value={pref.prefSchool ? { value: pref.prefSchool, label: pref.prefSchool } : null}
+                        onChange={(selected: any) => {
+                          const newPref = [...studyPreferences];
+                          newPref[index].prefSchool = selected?.value || '';
+                          setStudyPreferences(newPref);
+                        }}
+                        isClearable
+                        placeholder={pref.prefCountry ? `Search universities in ${pref.prefCountry}...` : "Search universities worldwide..."}
+                        styles={getSelectStyles(showValidation && !pref.prefSchool)}
+                        formatCreateLabel={(inputValue) => `Search for "${inputValue}"`}
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Course / Program</label>
-                  <input
-                    type="text"
-                    placeholder="MSc Data Science"
-                    value={prefCourse}
-                    onChange={(e) => setPrefCourse(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Course / Program</label>
+                      <CreatableSelect
+                        options={PROGRAM_CATEGORIES.map(p => ({ value: p, label: p }))}
+                        value={pref.prefCourse ? { value: pref.prefCourse, label: pref.prefCourse } : null}
+                        onChange={(selected: any) => {
+                          const newPref = [...studyPreferences];
+                          newPref[index].prefCourse = selected?.value || '';
+                          setStudyPreferences(newPref);
+                        }}
+                        isClearable
+                        placeholder="Select or type program..."
+                        styles={getSelectStyles(showValidation && !pref.prefCourse)}
+                        formatCreateLabel={(inputValue) => `Add custom program: "${inputValue}"`}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Intake</label>
+                      <input
+                        type="text"
+                        placeholder="September 2027"
+                        value={pref.prefIntake}
+                        onChange={(e) => {
+                          const newPref = [...studyPreferences];
+                          newPref[index].prefIntake = e.target.value;
+                          setStudyPreferences(newPref);
+                        }}
+                        className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 outline-none transition-all text-sm focus:ring-2 ${showValidation && !pref.prefIntake ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Yearly Budget Range</label>
+                      <input
+                        type="text"
+                        placeholder="$25,000 - $30,000"
+                        value={pref.budget}
+                        onChange={(e) => {
+                          const newPref = [...studyPreferences];
+                          newPref[index].budget = e.target.value;
+                          setStudyPreferences(newPref);
+                        }}
+                        className={`w-full bg-slate-50 border rounded-lg px-4 py-2.5 outline-none transition-all text-sm focus:ring-2 ${showValidation && !pref.budget ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Intake</label>
-                  <input
-                    type="text"
-                    placeholder="September 2027"
-                    value={prefIntake}
-                    onChange={(e) => setPrefIntake(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Yearly Budget Range</label>
-                  <input
-                    type="text"
-                    placeholder="$25,000 - $30,000"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-2.5 outline-none transition-all text-sm"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
           )}
 
@@ -418,7 +649,7 @@ export default function StudentApplicationForm() {
                   placeholder="Tell us more about your background, career goals, or specific visa questions."
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-lg px-4 py-3 outline-none transition-all text-sm resize-none"
+                  className={`w-full bg-slate-50 border rounded-lg px-4 py-3 outline-none transition-all text-sm resize-none focus:ring-2 ${showValidation && !additionalInfo ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200 focus:border-cyan-500 focus:ring-cyan-500/20"}`}
                 />
               </div>
             </div>
@@ -437,7 +668,7 @@ export default function StudentApplicationForm() {
 
             {step < 4 ? (
               <button
-                onClick={() => setStep(prev => Math.min(4, prev + 1))}
+                onClick={handleNextStep}
                 className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all shadow-sm hover:shadow-cyan-600/10 cursor-pointer"
               >
                 Next
@@ -445,11 +676,11 @@ export default function StudentApplicationForm() {
               </button>
             ) : (
               <button
-                onClick={() => saveApplication(true)}
+                onClick={handleSubmitApplication}
                 disabled={saving}
                 className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-all shadow-md hover:shadow-cyan-600/10 cursor-pointer disabled:opacity-50"
               >
-                {saving ? 'Submitting...' : 'Submit Application'}
+                {saving ? 'Saving...' : isSubmitted ? 'Update Details' : 'Submit Application'}
                 <CheckCircle className="h-4 w-4" />
               </button>
             )}
@@ -461,3 +692,4 @@ export default function StudentApplicationForm() {
     </div>
   );
 }
+
