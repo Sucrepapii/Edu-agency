@@ -73,7 +73,7 @@ function LoginContent() {
         
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center space-x-2 text-white">
-            <GraduationCap className="h-10 w-10 text-cyan-400" />
+            <img src="/logo.png" alt="EduAgent" className="h-10 w-10 object-contain" />
             <span className="font-bold text-2xl tracking-tight">EduAgent</span>
           </Link>
         </div>
