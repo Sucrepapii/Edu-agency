@@ -4,7 +4,8 @@ import { useChat } from 'ai/react';
 import { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Send, Bot, User, Loader2 } from 'lucide-react';
 
-export default function EligibilityBot({ onClose }: { onClose: () => void }) {
+export default function EligibilityBot() {
+  const [isOpen, setIsOpen] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -14,8 +15,9 @@ export default function EligibilityBot({ onClose }: { onClose: () => void }) {
   }, [messages]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end w-full max-w-sm sm:max-w-md pointer-events-none p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full flex flex-col h-[600px] max-h-[80vh] overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-10 duration-300 pointer-events-auto">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end pointer-events-none p-4">
+      {isOpen && (
+        <div className="bg-white rounded-2xl shadow-2xl w-full sm:w-[400px] flex flex-col h-[600px] max-h-[80vh] overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-10 duration-300 pointer-events-auto mb-4">
         
         {/* Header */}
         <div className="bg-slate-900 text-white p-4 flex items-center justify-between shadow-md z-10">
@@ -29,7 +31,7 @@ export default function EligibilityBot({ onClose }: { onClose: () => void }) {
             </div>
           </div>
           <button 
-            onClick={onClose}
+            onClick={() => setIsOpen(false)}
             className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
           >
             <X className="h-5 w-5" />
@@ -114,8 +116,20 @@ export default function EligibilityBot({ onClose }: { onClose: () => void }) {
              <p className="text-[10px] text-slate-400">AI can make mistakes. Check important information.</p>
           </div>
         </div>
-
-      </div>
+        </div>
+      )}
+      
+      {/* Floating Action Button */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-cyan-600 hover:bg-cyan-500 text-white rounded-full p-4 shadow-xl hover:shadow-cyan-500/50 transition-all transform hover:scale-110 flex items-center justify-center pointer-events-auto border-4 border-white dark:border-slate-900 group"
+          aria-label="Open chat"
+        >
+          <MessageSquare className="h-7 w-7 group-hover:hidden" />
+          <Bot className="h-7 w-7 hidden group-hover:block" />
+        </button>
+      )}
     </div>
   );
 }

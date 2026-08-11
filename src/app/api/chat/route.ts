@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = await streamText({
-    model: google('gemini-1.5-flash'),
+    model: google('gemini-3.5-flash'),
     system: `You are an AI assistant for EduAgent, a multi-tenant educational agency platform that helps students with global university admissions, immigration, and PR.
     
 Your role is to help prospective students understand their eligibility and answer questions strictly pertaining to:
