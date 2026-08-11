@@ -14,8 +14,8 @@ export default function EligibilityBot({ onClose }: { onClose: () => void }) {
   }, [messages]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col h-[600px] max-h-[90vh] overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end w-full max-w-sm sm:max-w-md pointer-events-none p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full flex flex-col h-[600px] max-h-[80vh] overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-10 duration-300 pointer-events-auto">
         
         {/* Header */}
         <div className="bg-slate-900 text-white p-4 flex items-center justify-between shadow-md z-10">
