@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { ArrowRight, CheckCircle, Shield, Users, FileText, BarChart3, GraduationCap, Search } from 'lucide-react';
+import EligibilityBot from '@/components/EligibilityBot';
 
 export default function LandingPage() {
+  const [showChat, setShowChat] = useState(false);
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       {/* Header */}
@@ -54,10 +57,10 @@ export default function LandingPage() {
                 className="bg-transparent border-none outline-none text-white placeholder-slate-400 w-full font-light"
               />
             </div>
-            <Link href="/register" className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-red-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+            <button onClick={() => setShowChat(true)} className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-red-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
               Check Eligibility
               <ArrowRight className="h-5 w-5" />
-            </Link>
+            </button>
           </div>
           
           <div className="pt-4 flex justify-center">
@@ -193,7 +196,8 @@ export default function LandingPage() {
           </div>
           <p className="text-sm font-light">&copy; {new Date().getFullYear()} EduAgent SaaS. All rights reserved.</p>
         </div>
-      </footer>
+    </footer>
+      {showChat && <EligibilityBot onClose={() => setShowChat(false)} />}
     </div>
   );
 }
