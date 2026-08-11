@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/api-middleware';
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthUser(req);
     if (!user || user.role !== 'SUPER_ADMIN') {
@@ -11,8 +11,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     const { isActive } = await req.json();
 
+    const { id } = await params;
     const announcement = await prisma.platformAnnouncement.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive },
     });
 
@@ -23,15 +24,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthUser(req);
     if (!user || user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     await prisma.platformAnnouncement.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Deleted successfully' });
