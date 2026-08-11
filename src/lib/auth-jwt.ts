@@ -14,7 +14,7 @@ function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
     .replace(/\//g, '_');
 }
 
-function base64UrlToArrayBuffer(base64url: string): Uint8Array {
+function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
   // Convert base64url to base64
   let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
   // Pad with '=' if necessary
@@ -26,7 +26,7 @@ function base64UrlToArrayBuffer(base64url: string): Uint8Array {
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
-  return bytes;
+  return bytes.buffer;
 }
 
 export async function signJWT(payload: any, secretStr: string): Promise<string> {

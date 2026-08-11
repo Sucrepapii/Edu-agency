@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
-import { getSessionUser } from '@/lib/auth'; // Using your existing auth if applicable
+import { getAuthUser } from '@/lib/api-middleware';
 
 cloudinary.config({
   cloudinary_url: process.env.CLOUDINARY_URL, // Auto-configured if this env var exists
@@ -8,7 +8,7 @@ cloudinary.config({
 
 export async function POST(req: Request) {
   try {
-    const user = await getSessionUser(req);
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

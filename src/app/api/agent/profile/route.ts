@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getSessionUser } from '@/lib/auth';
+import { getAuthUser, handleApiError } from '@/lib/api-middleware';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request) {
   try {
-    const user = await getSessionUser(req);
+    const user = await getAuthUser(req);
     if (!user || user.role !== 'AGENT') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const user = await getSessionUser(req);
+    const user = await getAuthUser(req);
     if (!user || user.role !== 'AGENT') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

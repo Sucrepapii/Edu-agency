@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
     const settings = await prisma.globalSetting.findMany();
     // Convert array of {key, value} to an object
-    const settingsObj = settings.reduce((acc, curr) => {
+    const settingsObj = settings.reduce((acc: Record<string, string>, curr: any) => {
       acc[curr.key] = curr.value;
       return acc;
     }, {} as Record<string, string>);
