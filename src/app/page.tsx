@@ -10,7 +10,7 @@ export default function LandingPage() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <img src="/logo.png" alt="EduAgent" className="h-8 w-8 object-contain" />
+            <img src="/logo.png" alt="EduAgent" className="h-12 w-12 object-contain" />
             <span className="font-bold text-xl tracking-tight text-slate-800">EduAgent<span className="text-red-500">Portal</span></span>
           </div>
           <nav className="flex items-center space-x-4">
@@ -188,7 +188,7 @@ export default function LandingPage() {
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-12 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center space-x-2 text-white">
-            <img src="/logo.png" alt="EduAgent" className="h-6 w-6 object-contain" />
+            <img src="/logo.png" alt="EduAgent" className="h-10 w-10 object-contain" />
             <span className="font-bold text-lg tracking-tight">EduAgent</span>
           </div>
           <p className="text-sm font-light">&copy; {new Date().getFullYear()} EduAgent SaaS. All rights reserved.</p>

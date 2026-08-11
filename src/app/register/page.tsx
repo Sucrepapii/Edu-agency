@@ -92,7 +92,7 @@ export default function RegisterPage() {
         
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center space-x-2 text-white">
-            <img src="/logo.png" alt="EduAgent" className="h-10 w-10 object-contain" />
+            <img src="/logo.png" alt="EduAgent" className="h-16 w-16 object-contain" />
             <span className="font-bold text-2xl tracking-tight">EduAgent</span>
           </Link>
         </div>

@@ -192,7 +192,7 @@ export default function Sidebar({ user, logout }: SidebarProps) {
       {/* Mobile Burger Menu Button */}
       <div className="lg:hidden bg-slate-900 text-white h-16 px-4 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center space-x-2">
-          <img src="/logo.png" alt="EduAgent" className="h-6 w-6 object-contain" />
+          <img src="/logo.png" alt="EduAgent" className="h-10 w-10 object-contain" />
           <span className="font-bold text-md tracking-tight">EduAgent Portal</span>
         </div>
         <div className="flex items-center space-x-2">
@@ -227,7 +227,7 @@ export default function Sidebar({ user, logout }: SidebarProps) {
         <div className="relative p-6 border-b border-slate-800/60">
           <div className="flex items-center justify-between text-white">
             <div className="flex items-center space-x-3">
-              <img src="/logo.png" alt="EduAgent" className="h-8 w-8 object-contain" />
+              <img src="/logo.png" alt="EduAgent" className="h-12 w-12 object-contain" />
               <span className="font-bold text-lg tracking-tight">EduAgent<span className="text-red-500">Portal</span></span>
             </div>
             <button 
