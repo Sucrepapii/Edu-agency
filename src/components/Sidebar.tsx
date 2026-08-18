@@ -224,11 +224,11 @@ export default function Sidebar({ user, logout }: SidebarProps) {
         }`}
       >
         {/* Top Header */}
-        <div className="relative p-6 border-b border-slate-800/60">
+        <div className="relative p-4 border-b border-slate-800/60">
           <div className="flex items-center justify-between text-white">
-            <div className="flex items-center space-x-3">
-              <img src="/logo.png" alt="EduAgent" className="h-12 w-12 object-contain" />
-              <span className="font-bold text-lg tracking-tight">EduAgent<span className="text-red-500">Portal</span></span>
+            <div className="flex items-center space-x-2">
+              <img src="/logo.png" alt="EduAgent" className="h-9 w-9 object-contain" />
+              <span className="font-extrabold text-base tracking-tight">EduAgent<span className="text-red-500">Portal</span></span>
             </div>
             <button 
               onClick={() => setShowNotifications(!showNotifications)} 
@@ -249,7 +249,7 @@ export default function Sidebar({ user, logout }: SidebarProps) {
 
           {/* Notifications Dropdown Panel */}
           {showNotifications && (
-            <div className="absolute left-4 right-4 top-20 bg-slate-900 border border-slate-850 rounded-xl shadow-2xl z-50 overflow-hidden text-left flex flex-col max-h-[300px]">
+            <div className="absolute left-4 right-4 top-[72px] bg-slate-900 border border-slate-850 rounded-xl shadow-2xl z-50 overflow-hidden text-left flex flex-col max-h-[300px]">
               <div className="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
                 <span className="text-xs font-semibold text-white">Notifications</span>
                 {unreadCount > 0 && (
