@@ -101,7 +101,7 @@ function LoginContent() {
 
       {/* Right Column: Login Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-12 lg:px-24 xl:px-32 relative">
-        <Link href="/" className="absolute top-8 left-8 lg:hidden inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-650 transition-colors">
+        <Link href="/" className="absolute top-8 left-8 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-650 transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>

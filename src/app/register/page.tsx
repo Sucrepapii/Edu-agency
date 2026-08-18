@@ -120,7 +120,7 @@ export default function RegisterPage() {
 
       {/* Right Column: Register Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-12 lg:px-24 xl:px-32 relative py-12">
-        <Link href="/" className="absolute top-8 left-8 lg:hidden inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-650 transition-colors">
+        <Link href="/" className="absolute top-8 left-8 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-650 transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Link>
@@ -145,25 +145,7 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleRegister} className="space-y-5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Select Agency *</label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <select
-                  required
-                  value={agencyId}
-                  onChange={(e) => setAgencyId(e.target.value)}
-                  className="w-full bg-white border border-slate-300 focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 rounded-xl pl-10 pr-4 py-3 outline-none transition-all text-sm shadow-sm appearance-none"
-                >
-                  <option value="">-- Choose an Agency --</option>
-                  {agencies.map((agency) => (
-                    <option key={agency.id} value={agency.id}>
-                      {agency.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            {/* Agency is automatically assigned behind the scenes */}
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Full Name *</label>

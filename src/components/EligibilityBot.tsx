@@ -14,6 +14,13 @@ export default function EligibilityBot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Listen to custom window event to open the bot
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-eligibility-bot', handleOpen);
+    return () => window.removeEventListener('open-eligibility-bot', handleOpen);
+  }, []);
+
   return (
     <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end pointer-events-none p-4">
       {isOpen && (
